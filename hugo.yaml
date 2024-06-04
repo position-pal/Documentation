@@ -1,0 +1,20 @@
+baseURL: 'https://position-pal.github.io'
+languageCode: en-us
+title: PositionPal
+module:
+  imports:
+    - path: github.com/colinwilson/lotusdocs
+      disable: false
+    - path: github.com/gohugoio/hugo-mod-bootstrap-scss/v5
+      disable: false
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+menu:
+  primary:
+    - name: Documentation
+      url: /docs/
+      identifier: docs
+      weight: 10
+    # other menu items
