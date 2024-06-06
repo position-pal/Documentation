@@ -50,11 +50,11 @@ jobs:
           HUGO_ENVIRONMENT: production
           HUGO_ENV: production
         run: hugo --gc --minify
-      # - name: Deploy website
-      #   if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
-      #   uses: JamesIves/github-pages-deploy-action@v4.6.1
-      #   with:
-      #     token: ${{ secrets.DEPLOYMENT_TOKEN }}
-      #     branch: main
-      #     folder: build
-      #     repository-name: position-pal/position-pal.github.io
+      - name: Deploy website
+        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+        uses: JamesIves/github-pages-deploy-action@v4.6.1
+        with:
+          token: ${{ secrets.DEPLOYMENT_TOKEN }}
+          branch: main
+          folder: public
+          repository-name: position-pal/position-pal.github.io
