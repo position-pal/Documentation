@@ -1,0 +1,14 @@
+---
+weight: 999
+title: "Context Map"
+description: ""
+icon: "article"
+date: "2024-06-07T12:07:46+02:00"
+lastmod: "2024-06-07T12:07:46+02:00"
+draft: true
+toc: true
+---
+
+## Bounded contexts
+
+{{< figure src="/res/context-map.png" alt="Boh" >}}
