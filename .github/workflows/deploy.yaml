@@ -6,6 +6,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore: 
+      - 'README.md'
+      - 'LICENSE'
+      - 'CONTRIBUTING.md'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
