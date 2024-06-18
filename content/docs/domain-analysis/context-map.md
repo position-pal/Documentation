@@ -1,6 +1,6 @@
 ---
 weight: 999
-title: "Context Map"
+title: "Context Map & Ubiquitous Language"
 description: ""
 icon: "article"
 date: "2024-06-07T12:07:46+02:00"
@@ -12,3 +12,7 @@ toc: true
 ## Bounded contexts
 
 {{< figure src="/res/context-map.png" alt="Boh" >}}
+
+## Ubiquitous language
+
+`TODO`: insert here the ubiquitous language
