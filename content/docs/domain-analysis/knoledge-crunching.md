@@ -1,5 +1,5 @@
 ---
-weight: 998
+weight: 101
 title: "Knowledge Crunching"
 description: ""
 icon: "article"

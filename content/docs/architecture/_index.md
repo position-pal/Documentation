@@ -1,5 +1,5 @@
 ---
-weight: 900
+weight: 2
 title: "Architecture"
 description: ""
 icon: "folder"

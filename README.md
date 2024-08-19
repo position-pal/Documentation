@@ -8,7 +8,7 @@ hugo server -D
 
 When pushed the changes are deployed automatically on [`position-pal.github.io`](https://position-pal.github.io/).
 
-## Structure
+## Structure and instructions
 
 ```plaintext
 .
@@ -35,10 +35,10 @@ When pushed the changes are deployed automatically on [`position-pal.github.io`]
 ├── hugo.yaml                             theme configuration
 ```
 
-- `content` folder contains the documentation sources:
+- `content` folder contains the documentation artifacts:
   - `docs` folder contains the documentation markdown pages
     - :point_right: **To write a new file: `hugo new <MD_FILE>` (example: `hugo new docs/requirements/context-map.md`)**
-    - For nested sections write a `_index.md` like [this one](./content/docs/requirements/_index.md)
+    - For nested sections write a `_index.md` like [this one](./content/docs/domain-analysis/_index.md)
     - [Hugo shortcuts](https://gohugo.io/content-management/shortcodes/) and [custom theme ones](https://lotusdocs.dev/docs/shortcodes/) can be useful
     - :warning: `draft` pages are not deployed
   - `schemas` folder contains the schemas (`.cml`, `.puml`)

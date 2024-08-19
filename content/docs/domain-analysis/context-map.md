@@ -1,5 +1,5 @@
 ---
-weight: 999
+weight: 102
 title: "Context Map & Ubiquitous Language"
 description: ""
 icon: "article"
