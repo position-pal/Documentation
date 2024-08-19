@@ -44,7 +44,11 @@ def update_md(path, output_dir)
     puts File.join(output_dir, diagram_name)
     <<~EOF
     <div style="width: 100%; overflow-x: auto; white-space: nowrap;">
-      {{< figure src="/#{File.join(output_dir, diagram_name)}.svg" alt="#{diagram_name} schema" >}}
+      <img 
+        src="/#{File.join(output_dir, diagram_name)}.svg" 
+        alt="#{diagram_name} schema" 
+        style="max-width: none;"
+      />
     </div>
     EOF
   end
