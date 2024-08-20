@@ -49,7 +49,9 @@ jobs:
       - name: Install Node.js dependencies
         run: "[[ -f package-lock.json || -f npm-shrinkwrap.json ]] && npm ci || true"
       - name: Setup PlantUML
-        run: sudo apt install -y plantuml
+        run: |
+          sudo apt install -y plantuml
+          plantuml -version
       - name: Embed PlantUML schemas in markdown
         run: |
           cd content
