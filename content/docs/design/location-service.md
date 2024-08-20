@@ -6,7 +6,7 @@ icon: "article"
 date: "2024-08-02T16:21:33+02:00"
 lastmod: "2024-08-02T16:21:33+02:00"
 draft: false
-toc: true
+toc: false
 ---
 
 The location service is responsible for location tracking and management.
@@ -111,12 +111,12 @@ package infrastructure {
         interface NotificationsService <<outbound port>> {
             + notify(notificationEvent: NotificationEvent)
         }
-        note left of NotificationsService::notify
+        note right of NotificationsService::notify
             ""NotificationEvent"" is in 
             shared kernel module (?)
         end note
 
-        NotificationsService o.. User
+        User .up.o NotificationsService
 
         interface MapsService <<outbound port>> {
             + estimateArrivalTime(start: GPSPosition, end: GPSPosition): Date
@@ -134,7 +134,8 @@ package infrastructure {
             At most 1 
             route per
             user per 
-            time is active
+            time is 
+            active
         end note
         enum State {
             + ACTIVE,
