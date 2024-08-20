@@ -2,5 +2,18 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>position-pal/renovate-config"
-  ]
+  ],
+  "regexManagers": [{
+    "fileMatch": [
+      "^\\.github\\/workflows\\/[^/]+\\.[Yy][Aa]?[Mm][Ll]$"
+    ],
+    "matchStrings": [
+      "\\s+HUGO_VERSION:\\s+'?\"?(?<currentValue>\\d+(\\.\\d+)*)'?\"?"
+    ],
+    "depNameTemplate": "gohugoio/hugo",
+    "currentValueTemplate": "v{{{currentValue}}}",
+    "packageNameTemplate": "gohugoio/hugo",
+    "datasourceTemplate": "github-tags",
+    "versioningTemplate": "semver"
+  }]
 }
