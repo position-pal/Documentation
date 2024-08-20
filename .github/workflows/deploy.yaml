@@ -48,9 +48,16 @@ jobs:
           fetch-depth: 0
       - name: Install Node.js dependencies
         run: "[[ -f package-lock.json || -f npm-shrinkwrap.json ]] && npm ci || true"
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
       - name: Setup PlantUML
         run: |
-          sudo apt install -y plantuml
+          wget https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar -O /usr/local/bin/plantuml.jar
+          sudo sh -c 'echo "#!/bin/bash\nexec java -jar /usr/local/bin/plantuml.jar \"\$@\"" > /usr/local/bin/plantuml'
+          sudo chmod +x /usr/local/bin/plantuml
           plantuml -version
       - name: Embed PlantUML schemas in markdown
         run: |
