@@ -53,8 +53,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Setup PlantUML
+      - name: Setup PlantUML & Graphviz
         run: |
+          echo :: Installing graphviz ::
+          sudo apt install graphviz
+          echo :: Installing PlantUML ::
           wget https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar -O /usr/local/bin/plantuml.jar
           sudo sh -c 'echo "#!/bin/bash\nexec java -jar /usr/local/bin/plantuml.jar \"\$@\"" > /usr/local/bin/plantuml'
           sudo chmod +x /usr/local/bin/plantuml
