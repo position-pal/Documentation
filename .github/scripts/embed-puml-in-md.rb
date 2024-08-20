@@ -39,7 +39,7 @@ end
 
 def update_md(path, output_dir)
   content = File.read(path)
-  updated_content = content.gsub(/```plantuml\n(@start\w+)\s+(\w+)\n(.*?)\n```/m) do
+  updated_content = content.gsub(/```plantuml\s*\n\s*(@start[\w-]+)\s+([\w-]+)\n(.*?)\n```/m) do
     diagram_name = $2
     puts File.join(output_dir, diagram_name)
     <<~EOF
