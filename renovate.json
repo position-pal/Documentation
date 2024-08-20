@@ -16,7 +16,7 @@
       "currentValueTemplate": "v{{{currentValue}}}",
       "packageNameTemplate": "gohugoio/hugo",
       "datasourceTemplate": "github-tags",
-      "versioningTemplate": "semver"
+      "versioningTemplate": "docker"
     }
   ]
 }
