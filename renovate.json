@@ -13,10 +13,9 @@
         "\\s+HUGO_VERSION:\\s+'?\"?(?<currentValue>\\d+(\\.\\d+)*)'?\"?"
       ],
       "depNameTemplate": "gohugoio/hugo",
-      "currentValueTemplate": "v{{{currentValue}}}",
       "packageNameTemplate": "gohugoio/hugo",
       "datasourceTemplate": "github-tags",
-      "versioningTemplate": "docker"
+      "versioningTemplate": "semver"
     }
   ]
 }
