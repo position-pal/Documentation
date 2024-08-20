@@ -9,54 +9,209 @@ draft: false
 toc: true
 ---
 
-## Location Service Design
+The location service is responsible for location tracking and management.
 
-`PositionPal` service for location tracking.
+## Abstract Design
+
+### Main domain concepts (from knowledge crunching)
+
+`TODO: To keep in sync with the code`
+
+| Concept | Description | Synonyms |
+|---|---|---|
+| Position | GPS coordinates | |
+| Route | A set of positions that can be interpolated forming a path between two geographical positions | Path |
+| Session | Represent a state and a position of a user at a certain time | Tracking |
+| State | State of a user at a certain time, the values that it could assume are: online, offline and SOS | |
+
+### Structure
 
 ```plantuml
-@startuml test
-actor foo1
-actor foo2
-foo1 <-0-> foo2
-foo1 <-(0)-> foo2
- 
-(ac1) -le(0)-> left1
-ac1 -ri(0)-> right1
-ac1 .up(0).> up1
-ac1 ~up(0)~> up2
-ac1 -do(0)-> down1
-ac1 -do(0)-> down2
- 
-actor1 -0)- actor2
- 
-component comp1
-component comp2
-comp1 *-0)-+ comp2
-[comp3] <-->> [comp4]
+@startuml location-service-structure
+package infrastructure {
+    package application {
+        package domain {
+            interface GPSPosition <<value object>> {
+                + latitude: Double
+                + longitude: Double
+            }
 
-boundary b1
-control c1
-b1 -(0)- c1
+'            interface Address <<value object>> {
+'                + street: String
+'                + city: String
+'                + zip: String
+'                + position: GPSPosition
+'            }
+'
+'            Address *-r- "1" GPSPosition
 
-component comp1
-interface interf1
-comp1 #~~( interf1
+            interface User <<entity>> {
+                + id: UserId
+                + inGroups: Set<GroupId>
+            }
+            interface UserId <<value object>>
+            interface GroupId <<value object>>
 
-:mode1actor: -0)- fooa1
-:mode1actorl: -ri0)- foo1l
+            User *-u- "N" UserId
+            User *-u- "N" GroupId
 
-[component1] 0)-(0-(0 [componentC]
-() component3 )-0-(0 "foo" [componentC]
+            interface Event {
+                + timestamp: Date
+                + user: User
+            }
 
-[aze1] #-->> [aze2]
+            User "1" --* Event
 
-node foo
-foo --> bar                             : ∅
-foo -[#red,thickness=1]-> bar1          : [#red,1]
-foo -[#red,dashed,thickness=2]-> bar2   : [#red,dashed,2]
-foo -[#green,dashed,thickness=4]-> bar3 : [#green,dashed,4]
-foo -[#blue,dotted,thickness=8]-> bar4  : [blue,dotted,8]
-foo -[#blue,plain,thickness=16]-> bar5  : [blue,plain,16]
-foo -[#blue;#green,dashed,thickness=4]-> bar6  : [blue;green,dashed,4]
+            interface StartRoutingEvent <<domain event>> extends Event {
+                + arrivalPosition: GPSPosition
+                + estimatedArrivalTime: Date
+            }
+
+            StartRoutingEvent *-- "1" GPSPosition
+
+            interface TrackingEvent <<domain event>> extends Event {
+                + position: GPSPosition
+            }
+
+            TrackingEvent *-- "1" GPSPosition
+
+            interface StopRoutingEvent <<domain event>> extends Event
+
+            interface SOSAlertEvent <<domain event>> extends Event {
+                + position: GPSPosition
+            }
+
+            SOSAlertEvent *-- "1" GPSPosition
+            
+            interface Route <<aggregate root>> {
+                + event: StartRoutingEvent
+                + positions: List<TrackingEvent>
+                + addTrace(TrackingEvent: TrackingEvent): Route
+            }
+
+            Route *-u- "1" StartRoutingEvent
+            Route *-u- "N" TrackingEvent
+        }
+
+        interface TrackingEventsStore <<outbound port>> {
+            + update(TrackingEvent: TrackingEvent)
+            + by(user: User): TrackingEvent
+        }
+
+        TrackingEventsStore o.up. TrackingEvent
+
+        interface RoutesStore <<outbound port>> {
+            + update(Route: Route)
+            + by(user: User): Route
+            + delete(Route: Route)
+        }
+
+        RoutesStore o.up. Route
+
+        interface NotificationsService <<outbound port>> {
+            + notify(notificationEvent: NotificationEvent)
+        }
+        note left of NotificationsService::notify
+            ""NotificationEvent"" is in 
+            shared kernel module (?)
+        end note
+
+        NotificationsService o.. User
+
+        interface MapsService <<outbound port>> {
+            + estimateArrivalTime(start: GPSPosition, end: GPSPosition): Date
+            + distance(start: GPSPosition, end: GPSPosition): GPSPosition
+        }
+
+        MapsService o.up. GPSPosition
+
+        interface UserTrackingInfoService <<inbound port>> {
+            + lastTraceOf(user: User): TrackingEvent
+            + routeOf(user: User): Route
+            + lastStateOf(user: User): State
+        }
+        note right of UserTrackingInfoService::routeOf
+            At most 1 
+            route per
+            user per 
+            time is active
+        end note
+        enum State {
+            + ACTIVE,
+            + INACTIVE,
+            + SOS,
+            + ROUTING
+        }
+
+        UserTrackingInfoService o.r. TrackingEvent
+        UserTrackingInfoService o.r. State
+
+        interface RoutesTrackingService <<outbound port>> {
+            + onNewRoute()
+            + onRoutingEvent()
+        }
+        RoutesTrackingService o.. Event
+
+        interface RoutesInfoService <<inbound port>> {
+            + routeOf(user: User): Route
+        }
+        RoutesInfoService o.u. Route
+
+        interface RealTimeTrackingService <<inbound port>> {
+            + onNewEvent(event: Event)
+        }
+        RealTimeTrackingService o.l. Event
+    }
+
+    class NotificationsServiceAdapter implements application.NotificationsService
+    note top of NotificationsServiceAdapter
+        This class is an adapter 
+        that forwards notifications to 
+        the notification microservice
+        through message broker
+    end note
+
+    class MapsServiceAdapter <<outbound adapter>> implements application.MapsService
+    note right of MapsServiceAdapter
+        Uses external geocoding and maps APIs
+    endnote
+
+    class RealTimeTrackingKafkaAdapter <<inbound adapter>>
+    RealTimeTrackingKafkaAdapter .up.> application.RealTimeTrackingService : <<uses>>
+
+    class UserTrackingInfoGrpcAdapter <<inbound adapter>> 
+    UserTrackingInfoGrpcAdapter .up.> application.UserTrackingInfoService : <<uses>>
+
+    class RoutesTrackingServiceKafkaAdapter implements application.RoutesTrackingService
+
+    class RoutesInfoGrpcAdapter
+    RoutesInfoGrpcAdapter .up.> application.RoutesInfoService : <<uses>>
+}
 @enduml
 ```
+
+### Behavior
+
+The active controllers of the system is based on top of Akka actors.
+
+```plantuml 
+@startuml location-service-behavior
+
+[*] --> Idle
+
+@enduml
+```
+
+### Interaction
+
+```plantuml
+@startuml location-service-interaction
+
+actor   "Client"                            as client
+queue   "RabbitMQ \n Notification Exchange" as rabbitmq_notifications
+queue   "Kafka \n Broker"                   as kafka_broker
+
+@enduml
+```
+
+### Architectural Design
