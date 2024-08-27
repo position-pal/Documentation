@@ -6,7 +6,7 @@ icon: "article"
 date: "2024-08-02T16:21:33+02:00"
 lastmod: "2024-08-02T16:21:33+02:00"
 draft: false
-toc: false
+toc: true
 ---
 
 The location service is responsible for location tracking and management.
@@ -108,16 +108,6 @@ package infrastructure {
 
         RoutesStore o.up. Route
 
-        interface NotificationsService <<outbound port>> {
-            + notify(notificationEvent: NotificationEvent)
-        }
-        note right of NotificationsService::notify
-            ""NotificationEvent"" is in 
-            shared kernel module (?)
-        end note
-
-        User .up.o NotificationsService
-
         interface MapsService <<outbound port>> {
             + estimateArrivalTime(start: GPSPosition, end: GPSPosition): Date
             + distance(start: GPSPosition, end: GPSPosition): GPSPosition
@@ -164,14 +154,6 @@ package infrastructure {
         RealTimeTrackingService o.l. Event
     }
 
-    class NotificationsServiceAdapter implements application.NotificationsService
-    note top of NotificationsServiceAdapter
-        This class is an adapter 
-        that forwards notifications to 
-        the notification microservice
-        through message broker
-    end note
-
     class MapsServiceAdapter <<outbound adapter>> implements application.MapsService
     note right of MapsServiceAdapter
         Uses external geocoding and maps APIs
@@ -198,8 +180,26 @@ The active controllers of the system is based on top of Akka actors.
 ```plantuml 
 @startuml location-service-behavior
 
-[*] --> Idle
+[*] -> NormalMode
 
+NormalMode -> NormalMode : TrackingEvent / replace last position
+
+NormalMode -up-> RoutingMode : StartRoutingEvent
+RoutingMode: entry / notify all groups members
+RoutingMode -up-> NormalMode : StopRoutingEvent / create snapshot of last position
+RoutingMode -up-> RoutingCheckingMode : TrackingEvent
+RoutingCheckingMode: entry / append position to route
+RoutingCheckingMode: do / perform checks
+state c <<choice>>
+RoutingCheckingMode --> c
+c --> RoutingMode : [""Continue""]
+c --> RoutingMode : [""Alert""] / notify all groups members
+
+NormalMode --> AlertMode : SOSAlertEvent
+AlertMode: entry / notify all groups members
+AlertMode: entry / replace last position
+AlertMode --> AlertMode : TrackingEvent / append position to route
+AlertMode --> NormalMode : StopSOSEvent
 @enduml
 ```
 
