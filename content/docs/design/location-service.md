@@ -24,6 +24,8 @@ The location service is responsible for location tracking and management.
 
 ### Structure
 
+The main domain concepts are reified in the following classes structure, following the DDD principles.
+
 ```plantuml
 @startuml location-service-structure
 package application {
@@ -137,7 +139,8 @@ package application {
     RealTimeTrackingService o.l. Event
     class ActorBasedTrackingService implements RealTimeTrackingService
     note top of RealTimeTrackingService
-        in charge of tracking management logic
+        in charge of users real time
+        tracking management
     end note
 }
 @enduml
@@ -145,33 +148,42 @@ package application {
 
 ### Behavior
 
-The active controllers of the system is based on top of Akka actors.
+The active controller of the system is based on top of Akka actors which allows for a scalable and fault-tolerant system without arranging a complex infrastructure for it.
 
 ```plantuml 
 @startuml location-service-behavior
 
-[*] -> NormalMode
+[*] -> ActiveMode
 
-NormalMode -> NormalMode : TrackingEvent / replace last position
+ActiveMode -> ActiveMode : ""TrackingEvent(position)"" / save ""position""
+ActiveMode: entry / create snapshot
+ActiveMode: entry / state <- ACTIVE
+ActiveMode -up-> RoutingMode : ""StartRoutingEvent"" \n / notify group members
+ActiveMode --> SOSMode : SOSAlertEvent \n / notify group members
 
-NormalMode -up-> RoutingMode : StartRoutingEvent
-RoutingMode: entry / notify all groups members
-RoutingMode -up-> NormalMode : StopRoutingEvent / create snapshot of last position
+RoutingMode: entry / state <- ROUTING
+RoutingMode ---> ActiveMode : ""StopRoutingEvent"" \n / notify all group members
 RoutingMode -up-> RoutingCheckingMode : TrackingEvent
+'RoutingMode --> RoutingMode : [no updates for a while] \n / alert all group members \n / state <- INACTIVE
+
 RoutingCheckingMode: entry / append position to route
 RoutingCheckingMode: do / perform checks
 state c <<choice>>
 RoutingCheckingMode --> c
 c --> RoutingMode : [""Continue""]
-c --> RoutingMode : [""Alert""] / notify all groups members
+c --> RoutingMode : [""Alert(msg)""] \n / alert group members ""msg""
+c --> ActiveMode : [""Success(msg)""] \n / notify group members ""msg""
 
-NormalMode --> AlertMode : SOSAlertEvent
-AlertMode: entry / notify all groups members
-AlertMode: entry / replace last position
-AlertMode --> AlertMode : TrackingEvent / append position to route
-AlertMode --> NormalMode : StopSOSEvent
+SOSMode: entry / state <- SOS
+SOSMode --> SOSMode : ""TrackingEvent"" / append position to route
+SOSMode --> ActiveMode : ""StopSOSEvent"" \n / notify group members
 @enduml
 ```
+
+In the above schema is not modelled the `Inactive Mode`: it is fired whenever no updates have been collected for a while (this is handled through timers by the actor).
+In such cases the state is changed to `INACTIVE` and if the state before was not the active one (default where everything is ok) an alert (i.e. a notification) is triggered.
+
+<!--
 
 ### Interaction
 
@@ -185,4 +197,45 @@ queue   "Kafka \n Broker"                   as kafka_broker
 @enduml
 ```
 
+-->
+
 ### Architectural Design
+
+The project is structured by implementing hexagonal architecture, mapping layers to Gradle submodules.
+
+```plantuml
+@startuml repo-structure
+
+skinparam component {
+    BackgroundColor<<external>> White
+    BackgroundColor<<executable>> #ccffcc
+    BackgroundColor<<test>> cyan
+}
+skinparam DatabaseBackgroundColor LightYellow
+skinparam NodeBackgroundColor White
+
+component ":location-service" {
+    [:commons] as C
+    [:domain] as D
+    [:application] as A
+
+    [:presentation] as P
+    [io.circe:circe-core_3] as circe <<external>>
+    [io.grpc-*] as grpc <<external>>
+
+    [:infrastructure] as I
+    [org.http4s:http4s-*] as http4s <<external>>
+    [com.typesafe.akka:akka-cluster-*] as akka <<external>>
+
+    D -up-|> C
+    A -up-|> D
+    P -up-|> A
+    circe <|-left- P
+    grpc <|-right- P
+    I -up-|> P
+    http4s <|- I
+    I -|> akka
+}
+
+@enduml
+```
