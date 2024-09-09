@@ -6,10 +6,10 @@ icon: "article"
 date: "2024-08-02T16:21:33+02:00"
 lastmod: "2024-08-02T16:21:33+02:00"
 draft: false
-toc: true
+toc: false
 ---
 
-The location service is responsible for location tracking and management.
+The location service is responsible for the real-time location tracking and management of the users tracking information.
 
 ## Abstract Design
 
