@@ -11,6 +11,9 @@ markup:
   goldmark:
     renderer:
       unsafe: true
+params:
+  docs:
+    darkMode: true
 menu:
   primary:
     - name: Documentation
