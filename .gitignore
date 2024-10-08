@@ -19,3 +19,6 @@ hugo.linux
 
 ### macOS ###
 .DS_Store
+
+### PlantUML ###
+/out/
