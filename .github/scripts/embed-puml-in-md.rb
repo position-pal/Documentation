@@ -30,11 +30,20 @@ if ARGV.length != 2 || !File.directory?(ARGV[0]) || !File.directory?(ARGV[1])
   exit 1
 end
 
-def generate_svg_diagrams(path, output_dir)
-  system("plantuml -tsvg #{path}")
+def move_diagrams_to(path, output_dir, suffix = "light")
   Dir.glob(File.join(File.dirname(path), "*.svg")).each do |file|
-    FileUtils.mv(file, output_dir)
+    file_name = File.basename(file, ".svg")
+    destination = File.join(output_dir, "#{file_name}-#{suffix}.svg")
+    FileUtils.mv(file, destination)
   end
+end
+
+def generate_svg_diagrams(path, output_dir)
+  puts "Generating SVG diagrams for #{path} in #{output_dir}..."
+  system("plantuml -tsvg #{path}")
+  move_diagrams_to(path, output_dir)
+  system("plantuml -tsvg -darkmode #{path}")
+  move_diagrams_to(path, output_dir, "dark")
 end
 
 def update_md(path, output_dir)
@@ -61,7 +70,7 @@ def process_md_files(directory, output_dir)
   Find.find(directory) do |path|
     if File.file?(path) && File.extname(path) == MARKDOWN_FILE_EXTENSION
       generate_svg_diagrams(path, output_dir)
-      update_md(path, output_dir)
+      # update_md(path, output_dir)
     end
   end
 end
