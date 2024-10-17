@@ -15,16 +15,96 @@ The location service is responsible for the real-time location tracking and mana
 
 ### Main domain concepts (from knowledge crunching)
 
-| Concept | Description | Synonyms |
-|---|---|---|
+| Concept  | Description                                                                                                              | Synonyms |
+| -------- | ------------------------------------------------------------------------------------------------------------------------ | -------- |
 | Location | A specific point on a geographical plane, represented by coordinates that indicates where something / someone is located | Position |
-| Route | A set of positions that can be interpolated forming a path between two geographical positions | Path |
-| Session | Represent the state and the position of a user at a certain time | Tracking |
-| State | State of a user at a certain time, the values that it could assume are: online, offline and SOS | |
+| Route    | A set of positions that can be interpolated forming a path between two geographical positions                            | Path     |
+| Tracking | Represent the user route information at a certain point in time                                                          |          |
+| State    | State of a user at a certain time, the values that it could assume are: online, offline and SOS                          |          |
 
 ### Structure
 
 The main domain concepts are reified in the following classes structure, following the DDD principles.
+
+```plantuml 
+@startuml location-service-structure-domain
+package domain {
+    interface GPSLocation <<value object>> {
+        + latitude: Double
+        + longitude: Double
+    }
+
+    class User <<entity>> {
+        + id: UserId
+        + inGroups: Set<GroupId>
+    }
+    class UserId <<value object>>
+    class GroupId <<value object>>
+
+    User *-l- "N" UserId
+    User *-r- "N" GroupId
+
+    enum RoutingMode {
+        + DRIVING,
+        + WALKING,
+        + CYCLING
+    }
+
+    '----------------------------- Events -----------------------------'
+    interface Event {
+        + timestamp: Date
+        + user: UserId
+    }
+    User "1" --* Event
+
+    interface RoutingStarted <<domain event>> extends Event {
+        + mode: RoutingMode
+        + destination: GPSLocation
+        + expectedArrival: Date
+    }
+    interface SampledLocation <<domain event>> extends Event {
+        + position: GPSLocation
+    }
+    interface SOSAlertTriggered <<domain event>> extends Event {
+        + position: GPSLocation
+    }
+    interface RoutingStopped <<domain event>> extends Event
+    interface SOSAlertStopped <<domain event>> extends Event
+    interface WentOffline <<domain event>> extends Event
+
+    RoutingStarted *-- "1" GPSLocation
+    RoutingStarted *-- "1" RoutingMode
+    SampledLocation *-- "1" GPSLocation
+    SOSAlertTriggered *-- "1" GPSLocation
+
+    '----------------------- Tracking and Routes ----------------------'
+    interface Route {
+        + locations: List<SampledLocation>
+    }
+    interface Tracking <<aggregate root>> {
+        + route: Route
+        + user: UserId
+        + addSample(sample: SampledLocation): Tracking
+    }
+    interface MonitorableTracking extends Tracking {
+        + mode: RoutingMode
+        + destination: GPSLocation
+        + expectedArrival: Date
+    }
+    note right of MonitorableTracking
+        A tracking with additional information
+        enabling the user to be monitored
+    end note
+
+    Route *-u- "N" SampledLocation
+    Tracking *-u- "1" Route
+    MonitorableTracking *-u- "1" GPSLocation
+    MonitorableTracking *-u- "1" RoutingMode
+}
+@enduml
+```
+
+<!--
 
 ```plantuml
 @startuml location-service-structure
@@ -74,7 +154,7 @@ package application {
         }
 
         SOSAlertEvent *-- "1" GPSLocation
-        
+
         interface Route <<aggregate root>> {
             + event: StartRoutingEvent
             + positions: List<TrackingEvent>
@@ -116,10 +196,10 @@ package application {
         + lastStateOf(user: User): State
     }
     note right of UserTrackingInfoService::routeOf
-        At most 1 
+        At most 1
         route per
-        user per 
-        time is 
+        user per
+        time is
         active
     end note
     enum State {
@@ -146,11 +226,13 @@ package application {
 @enduml
 ```
 
+-->
+
 ### Behavior
 
 The active controller of the system is based on top of Akka actors which allows for a scalable and fault-tolerant system without arranging a complex infrastructure for it.
 
-```plantuml 
+```plantuml
 @startuml location-service-behavior
 
 [*] -> ActiveMode
