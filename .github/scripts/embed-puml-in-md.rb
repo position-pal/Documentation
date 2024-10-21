@@ -57,10 +57,34 @@ def update_md(path, output_dir)
         src="/#{File.join(output_dir, diagram_name)}.svg" 
         alt="#{diagram_name} schema" 
         style="max-width: none;"
+        class="schema"
       />
     </div>
     EOF
   end
+  File.write(path, updated_content)
+end
+
+def add_js_utilities(path)
+  content = File.read(path)
+  head_index = content.index("<head>")
+  code = <<~EOF
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      function updateDiagramImage() {
+        const darkMode = $('html').attr('data-dark-mode') !== undefined;
+        const suffix = darkMode ? '-dark' : '-light';
+        $('.schema').each(function() {
+          const imgElement = $(this);
+          const originalSrc = imgElement.attr('src');
+          imgElement.attr('src', originalSrc + suffix + '.svg');
+        });
+      }
+      $(document).on('DOMSubtreeModified', 'html', updateDiagramImage);
+      $(document).ready(updateDiagramImage);
+    </script>
+  EOF
+  if head_index
   File.write(path, updated_content)
 end
 
@@ -70,7 +94,8 @@ def process_md_files(directory, output_dir)
   Find.find(directory) do |path|
     if File.file?(path) && File.extname(path) == MARKDOWN_FILE_EXTENSION
       generate_svg_diagrams(path, output_dir)
-      # update_md(path, output_dir)
+      add_js_utilities(path)
+      update_md(path, output_dir)
     end
   end
 end
