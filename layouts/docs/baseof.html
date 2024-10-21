@@ -17,7 +17,8 @@
         const suffix = darkMode ? '-dark' : '-light';
         $('.schema').each(function() {
           const imgElement = $(this);
-          const originalSrc = imgElement.attr('src');
+          let originalSrc = imgElement.attr('src');
+          originalSrc = originalSrc.replace(/(-dark|-light)\.svg$/, '');
           imgElement.attr('src', originalSrc + suffix + '.svg');
         });
       }
