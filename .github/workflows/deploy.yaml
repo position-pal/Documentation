@@ -70,7 +70,7 @@ jobs:
         run: hugo --gc --minify
       - name: Deploy website
         if: ${{ github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch }}
-        uses: JamesIves/github-pages-deploy-action@881db5376404c5c8d621010bcbec0310b58d5e29 # v4.6.8
+        uses: JamesIves/github-pages-deploy-action@62fec3add6773ec5dbbf18d2ee4260911aa35cf4 # v4.6.9
         with:
           token: ${{ secrets.DEPLOYMENT_TOKEN }}
           branch: main
