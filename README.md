@@ -2,8 +2,14 @@
 
 To view locally the website:
 
-```
+```bash
 hugo server -D
+```
+
+Or leverage docker to build the website:
+
+```bash
+./run-hugo-site.sh
 ```
 
 When pushed the changes are deployed automatically on [`position-pal.github.io`](https://position-pal.github.io/).
@@ -43,6 +49,7 @@ When pushed the changes are deployed automatically on [`position-pal.github.io`]
     - :warning: `draft` pages are not deployed
   - `schemas` folder contains the schemas (`.cml`, `.puml`)
     - Mermaid schemas are rendered automatically inside the markdown :)
+    - PlantUML schemas are converted to images and replaced in the markdown by the `.github/scripts/embed-puml-in-md.rb` script :)
   - `res` folder contains images
 - `data/landing.yaml` contains the [landing page configuration](https://lotusdocs.dev/docs/guides/landing-page/)
 - `hugo.yaml` contains the [theme configurations](https://lotusdocs.dev/docs/reference/configuration/)
