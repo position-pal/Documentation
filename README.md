@@ -3,12 +3,6 @@
 To view locally the website:
 
 ```bash
-hugo server -D
-```
-
-Or leverage docker to build the website:
-
-```bash
 ./run-hugo-site.sh
 ```
 
