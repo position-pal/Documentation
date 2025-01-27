@@ -1,6 +1,6 @@
 services:
   hugo:
-    image: hugomods/hugo:go-git-0.130.0
+    image: hugomods/hugo:go-git-0.142.0
     volumes:
       - .:/src
     ports:
