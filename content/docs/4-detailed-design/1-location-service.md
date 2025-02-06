@@ -1,5 +1,5 @@
 ---
-weight: 301
+weight: 401
 title: "Location Service"
 description: ""
 icon: "article"
@@ -25,6 +25,8 @@ The location service is responsible for the real-time location tracking and mana
 ### Structure
 
 The main domain concepts are reified in the following classes structure, following the DDD principles.
+
+<!--
 
 ```plantuml 
 @startuml location-service-structure-domain
@@ -103,8 +105,6 @@ package domain {
 }
 @enduml
 ```
-
-<!--
 
 ```plantuml
 @startuml location-service-structure
@@ -230,7 +230,9 @@ package application {
 
 ### Behavior
 
+<!--
 The active controller of the system is based on top of Akka actors which allows for a scalable and fault-tolerant system without arranging a complex infrastructure for it.
+-->
 
 ```plantuml
 @startuml location-service-behavior
@@ -261,9 +263,6 @@ SOSMode --> SOSMode : ""TrackingEvent"" / append position to route
 SOSMode --> ActiveMode : ""StopSOSEvent"" \n / notify group members
 @enduml
 ```
-
-In the above schema is not modelled the `Inactive Mode`: it is fired whenever no updates have been collected for a while (this is handled through timers by the actor).
-In such cases the state is changed to `INACTIVE` and if the state before was not the active one (default where everything is ok) an alert (i.e. a notification) is triggered.
 
 <!--
 
