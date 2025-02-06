@@ -6,9 +6,13 @@ icon: "article"
 toc: true
 ---
 
-In this section are presented the functional requirements of the system.
+In this section are collected the functional requirements of the system.
 
 ## User Stories
+
+### Users and groups
+
+### Location tracking
 
 <em>
 
@@ -29,8 +33,8 @@ In this section are presented the functional requirements of the system.
    So that I can see their last reported location and status when live sharing is unavailable
 
 5. As a logged user \
-   I want to be able to send an SOS alert to all members of all groups I'm participating despite the fact I'm or not sharing my location \
-   So that if I am in a dangerous situation my friends are notified
+   I want to be able to send an SOS alert comprising of my location to all members of all groups I'm participating despite the fact I'm or not sharing my location \
+   So that if I am in a dangerous situation my friends are notified and knows where I am
 
 6. As a logged user \
    I want to start sharing my location to all groups' members after the trigger of an SOS alert \
@@ -52,27 +56,24 @@ In this section are presented the functional requirements of the system.
     I want to be able to stop it prematurely \
     So that my friend knows a change in my plan have occurred
 
-11. very close to 5 \
-    As a logged user \
-    I want to be able to receive SOS alerts from all my groups' members comprising of the location of the user who triggered it \
-    So that I can take appropriate action
+11. As a logged user \
+    I want to be able to see the entire path taken by my groups' members who are sharing a journey or triggered an SOS alert \
+    So that I know where they have been during the dangerous situation 
 
 12. As a logged user \
-    I want to be able to see the entire path taken by my groups' members if they shared it or triggered an SOS alert \
-    So that …
-
-13. As a logged user \
     I want to be able to receive a notification when one of my groups' member start a journey or trigger an SOS alert \
     So that I'm aware of it
 
-14. As a logged user \
+13. As a logged user \
     I want to be able to receive a notification if one my groups' member who triggered an SOS alert goes offline or deactivate it \
     So that I can take appropriate action
 
-15. As a logged user \
+14. As a logged user \
     I want to be able to receive a notification if one my groups' member who started a journey stops moving, doesn't arrive on time, goes offline, reaches their destination or deactivate it \
     So that I can take appropriate action
 
 </em>
+
+### Chat
 
 ## Gherkin specifications
