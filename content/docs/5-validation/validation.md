@@ -1,5 +1,5 @@
 ---
-weight: 6
+weight: 5
 title: "Self Assessment and Validation"
 description: ""
 icon: "article"
