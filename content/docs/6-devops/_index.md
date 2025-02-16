@@ -1,6 +1,6 @@
 ---
 weight: 5
-title: "Self Assessment and Validation"
+title: "DevOps"
 description: ""
 icon: "folder"
 draft: false
