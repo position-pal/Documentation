@@ -3,8 +3,6 @@ weight: 401
 title: "Location Service"
 description: ""
 icon: "article"
-date: "2024-08-02T16:21:33+02:00"
-lastmod: "2024-08-02T16:21:33+02:00"
 draft: false
 toc: false
 ---
@@ -24,87 +22,140 @@ The location service is responsible for the real-time location tracking and mana
 
 ### Structure
 
-The main domain concepts are reified in the following classes structure, following the DDD principles.
-
-<!--
+The main domain concepts and events are presented hereafter and reified in the following classes structure, following the DDD principles.
 
 ```plantuml 
 @startuml location-service-structure-domain
+package shared.kernel.domain {
+    interface User
+    interface UserId <<value object>>
+    interface GroupId <<value object>>
+    User *-l-> "1" UserId
+}
+
 package domain {
+    interface Scope {
+        + user: User
+        + group: GroupId
+    }
+
     interface GPSLocation <<value object>> {
         + latitude: Double
         + longitude: Double
     }
 
-    class User <<entity>> {
-        + id: UserId
-        + inGroups: Set<GroupId>
+    '------------------------- Events -------------------------'
+    interface DomainEvent {
+        + timestamp: Instant
+        + user: User
+        + group: GroupId
+        + scope: Scope
     }
-    class UserId <<value object>>
-    class GroupId <<value object>>
+    User "1" <--* DomainEvent
+    GroupId "1" <---* DomainEvent
+    DomainEvent *-right-> "1" Scope
 
-    User *-l- "N" UserId
-    User *-r- "N" GroupId
-
-    enum RoutingMode {
-        + DRIVING,
-        + WALKING,
-        + CYCLING
+    interface DrivenEvent extends DomainEvent
+    class UserUpdate <<domain event>> implements DrivenEvent {
+        + position: Option[GRSLocation]
+        + status: UserState
     }
 
-    '----------------------------- Events -----------------------------'
-    interface Event {
-        + timestamp: Date
-        + user: UserId
-    }
-    User "1" --* Event
+    interface DrivingEvent extends DomainEvent
+    interface ClientDrivingEvent extends DrivingEvent
 
-    interface RoutingStarted <<domain event>> extends Event {
+    class SampledLocation <<domain event>> implements ClientDrivingEvent {
+        + position: GPSLocation
+    }
+    class SOSAlertTriggered <<domain event>> implements ClientDrivingEvent {
+        + position: GPSLocation
+    }
+    class SOSAlertStopped <<domain event>> implements ClientDrivingEvent
+    class RoutingStarted <<domain event>> implements ClientDrivingEvent {
+        + position: GPSLocation
         + mode: RoutingMode
         + destination: GPSLocation
-        + expectedArrival: Date
+        + expectedArrival: Instant
     }
-    interface SampledLocation <<domain event>> extends Event {
-        + position: GPSLocation
-    }
-    interface SOSAlertTriggered <<domain event>> extends Event {
-        + position: GPSLocation
-    }
-    interface RoutingStopped <<domain event>> extends Event
-    interface SOSAlertStopped <<domain event>> extends Event
-    interface WentOffline <<domain event>> extends Event
+    class RoutingStopped <<domain event>> implements ClientDrivingEvent
 
-    RoutingStarted *-- "1" GPSLocation
-    RoutingStarted *-- "1" RoutingMode
-    SampledLocation *-- "1" GPSLocation
-    SOSAlertTriggered *-- "1" GPSLocation
+    interface InternalDrivingEvent extends DrivingEvent
+    class WentOffline <<domain event>> implements InternalDrivingEvent
+    class StuckAlertTriggered <<domain event>> implements InternalDrivingEvent
+    class StuckAlertStopped <<domain event>> implements InternalDrivingEvent
+    class TimeoutAlertTriggered <<domain event>> implements InternalDrivingEvent
 
-    '----------------------- Tracking and Routes ----------------------'
+    GPSLocation --* RoutingStarted
+    GPSLocation --* SOSAlertTriggered
+    GPSLocation --* SampledLocation
+
+    '------------------------- Aggregates -------------------------'
+    enum RoutingMode {
+        DRIVING
+        WALKING
+        CYCLING
+    }
+
+    enum Alert {
+        STUCK
+        LATE
+        OFFLINE
+    }
+
+    enum UserState {
+        ACTIVE
+        INACTIVE
+        SOS
+        ROUTING
+        WARNING
+    }
+
     interface Route {
-        + locations: List<SampledLocation>
+        + path: List[GPSLocation]
     }
-    interface Tracking <<aggregate root>> {
+
+    interface Tracking {
         + route: Route
-        + user: UserId
         + addSample(sample: SampledLocation): Tracking
+        + +(sample: SampledLocation): Tracking
     }
+
+    Tracking *-right- Route
+
     interface MonitorableTracking extends Tracking {
         + mode: RoutingMode
         + destination: GPSLocation
-        + expectedArrival: Date
+        + expectedArrival: Instant
+        - alerts: Set[Alert]
+        + addAlert(alert: Alert): MonitorableTracking
+        + removeAlert(alert: Alert): MonitorableTracking
+        + has(alert: Alert): Boolean
     }
-    note right of MonitorableTracking
-        A tracking with additional information
-        enabling the user to be monitored
-    end note
 
-    Route *-u- "N" SampledLocation
-    Tracking *-u- "1" Route
-    MonitorableTracking *-u- "1" GPSLocation
-    MonitorableTracking *-u- "1" RoutingMode
+    MonitorableTracking o-- Alert
+    MonitorableTracking o-- RoutingMode
+    MonitorableTracking *-- GPSLocation
+
+    interface Session {
+        + scope: Scope
+        + userState: UserState
+        + lastSampledLocation: SampledLocation
+        + tracking: Option[Tracking]
+        + updateWith(e: DrivingEvent): Session
+    }
+
+    Session *-left-> "1" Scope
+    Session *-right-> "1" UserState
+    Session *--> "1" SampledLocation
+    Session o--> "1" Tracking
+
 }
 @enduml
 ```
+
+- **`Scope`**: Represents the context in which an event occurs, it is composed of a user and a group, capturing the idea that a user's state can differ from group to group, enabling group-specific visibility and tracking.
+
+<!--
 
 ```plantuml
 @startuml location-service-structure
@@ -235,32 +286,35 @@ The active controller of the system is based on top of Akka actors which allows 
 -->
 
 ```plantuml
-@startuml location-service-behavior
+@startuml userstate-behavior
 
-[*] -> ActiveMode
+[*] -> NormalMode
 
-ActiveMode -> ActiveMode : ""TrackingEvent(position)"" / save ""position""
-ActiveMode: entry / create snapshot
-ActiveMode: entry / state <- ACTIVE
-ActiveMode -up-> RoutingMode : ""StartRoutingEvent"" \n / notify group members
-ActiveMode --> SOSMode : SOSAlertEvent \n / notify group members
+state NormalMode {
+    [*] --> Active
+    Active --> Active : ""SampledLocation""
 
-RoutingMode: entry / state <- ROUTING
-RoutingMode ---> ActiveMode : ""StopRoutingEvent"" \n / notify all group members
-RoutingMode -up-> RoutingCheckingMode : TrackingEvent
-'RoutingMode --> RoutingMode : [no updates for a while] \n / alert all group members \n / state <- INACTIVE
+    Active -left-> Inactive : ""WentOffline""
+    Inactive -right-> Active : ""SampledLocation""
 
-RoutingCheckingMode: entry / append position to route
-RoutingCheckingMode: do / perform checks
-state c <<choice>>
-RoutingCheckingMode --> c
-c --> RoutingMode : [""Continue""]
-c --> RoutingMode : [""Alert(msg)""] \n / alert group members ""msg""
-c --> ActiveMode : [""Success(msg)""] \n / notify group members ""msg""
+    Active -down-> Routing : ""RoutingStarted""
+    Routing -up-> Active : ""RoutingStopped""
+    Inactive --> Routing : ""RoutingStarted""
+    Routing -> Routing : ""SampledLocation""
 
-SOSMode: entry / state <- SOS
-SOSMode --> SOSMode : ""TrackingEvent"" / append position to route
-SOSMode --> ActiveMode : ""StopSOSEvent"" \n / notify group members
+    Routing --> Warning : ""WentOffline"", \n ""StuckAlertTriggered"", \n ""TimeoutAlertTriggered"" / ""late<-true""
+    Warning -up-> Routing : ""StuckAlertStopped"", \n ""SampledLocation"" [""!late""]
+    Warning -up-> Active : ""RoutingStopped""
+    Warning -> Warning : ""SampledLocation"" [""late""], \n ""TimeoutAlertTriggered"", \n ""StuckAlertTriggered""
+}
+
+state SOSMode {
+    [*] -> SOS
+}
+
+NormalMode --> SOSMode : ""SOSAlertTriggered""
+SOSMode --> NormalMode : ""SOSAlertStopped""
+
 @enduml
 ```
 
@@ -280,6 +334,7 @@ queue   "Kafka \n Broker"                   as kafka_broker
 
 -->
 
+<!--
 ### Architectural Design
 
 The project is structured by implementing hexagonal architecture, mapping layers to Gradle submodules.
@@ -320,3 +375,4 @@ component ":location-service" {
 
 @enduml
 ```
+-->
