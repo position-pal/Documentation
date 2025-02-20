@@ -1,5 +1,5 @@
 ---
-weight: 7
+weight: 700
 title: "Deployment"
 description: ""
 icon: "folder"

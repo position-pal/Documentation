@@ -1,5 +1,5 @@
 ---
-weight: 4
+weight: 400
 title: "Detailed Design"
 description: ""
 icon: "folder"

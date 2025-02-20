@@ -1,5 +1,5 @@
 ---
-weight: 6
+weight: 600
 title: "DevOps"
 description: ""
 icon: "folder"
