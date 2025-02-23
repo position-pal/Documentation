@@ -4,12 +4,18 @@ title: "Location Service"
 description: ""
 icon: "article"
 draft: false
-toc: false
+toc: true
 ---
 
-The location service is responsible for the real-time location tracking and management of the users tracking information.
+The location service is responsible for the **real-time location _tracking_** and **management** of the **_users tracking information_**.
+
+This chapter explains the strategies used to meet the requirements identified in the analysis.
+
+The design is based on the **Domain-Driven Design** principles, focusing on the _structure_, _behavior_, and _interaction_ of the system.
 
 ## Abstract Design
+
+<!--
 
 ### Main domain concepts (from knowledge crunching)
 
@@ -20,24 +26,34 @@ The location service is responsible for the real-time location tracking and mana
 | Tracking | Represent the user route information at a certain point in time                                                          |          |
 | State    | State of a user at a certain time, the values that it could assume are: online, offline and SOS                          |          |
 
+-->
+
 ### Structure
 
-The main domain concepts and events are presented hereafter and reified in the following classes structure, following the DDD principles.
+The main domain concepts and events are presented hereafter and reified in the following classes structure, following the DDD building blocks.
 
 ```plantuml 
 @startuml location-service-structure-domain
 package shared.kernel.domain {
-    interface User
+    interface User <<entity>>
     interface UserId <<value object>>
     interface GroupId <<value object>>
-    User *-l-> "1" UserId
+    User *-r-> "1" UserId
 }
 
 package domain {
+    interface Scope <<value object>> {
+        + user: UserId
+        + group: GroupId
+    }
+
     interface Scope {
         + user: User
         + group: GroupId
     }
+
+    UserId "1" <--* Scope
+    GroupId "1" <--* Scope
 
     interface GPSLocation <<value object>> {
         + latitude: Double
@@ -47,12 +63,12 @@ package domain {
     '------------------------- Events -------------------------'
     interface DomainEvent {
         + timestamp: Instant
-        + user: User
+        + user: UserId
         + group: GroupId
         + scope: Scope
     }
-    User "1" <--* DomainEvent
-    GroupId "1" <---* DomainEvent
+    '''UserId "1" <--* DomainEvent
+    '''GroupId "1" <---* DomainEvent
     DomainEvent *-right-> "1" Scope
 
     interface DrivenEvent extends DomainEvent
@@ -64,30 +80,39 @@ package domain {
     interface DrivingEvent extends DomainEvent
     interface ClientDrivingEvent extends DrivingEvent
 
-    class SampledLocation <<domain event>> implements ClientDrivingEvent {
+    class SampledLocation <<domain event>> {
         + position: GPSLocation
     }
-    class SOSAlertTriggered <<domain event>> implements ClientDrivingEvent {
+    ClientDrivingEvent <|.. SampledLocation
+    class SOSAlertTriggered <<domain event>> {
         + position: GPSLocation
     }
-    class SOSAlertStopped <<domain event>> implements ClientDrivingEvent
-    class RoutingStarted <<domain event>> implements ClientDrivingEvent {
+    ClientDrivingEvent <|.. SOSAlertTriggered
+    class SOSAlertStopped <<domain event>>
+    ClientDrivingEvent <|... SOSAlertStopped
+    class RoutingStarted <<domain event>> {
         + position: GPSLocation
         + mode: RoutingMode
         + destination: GPSLocation
         + expectedArrival: Instant
     }
-    class RoutingStopped <<domain event>> implements ClientDrivingEvent
+    ClientDrivingEvent <|.. RoutingStarted
+    class RoutingStopped <<domain event>> 
+    ClientDrivingEvent <|... RoutingStopped
 
     interface InternalDrivingEvent extends DrivingEvent
-    class WentOffline <<domain event>> implements InternalDrivingEvent
-    class StuckAlertTriggered <<domain event>> implements InternalDrivingEvent
-    class StuckAlertStopped <<domain event>> implements InternalDrivingEvent
-    class TimeoutAlertTriggered <<domain event>> implements InternalDrivingEvent
+    class WentOffline <<domain event>>
+    InternalDrivingEvent <|... WentOffline
+    class StuckAlertTriggered <<domain event>> 
+    InternalDrivingEvent <|.. StuckAlertTriggered
+    class StuckAlertStopped <<domain event>> 
+    InternalDrivingEvent <|... StuckAlertStopped
+    class TimeoutAlertTriggered <<domain event>> 
+    InternalDrivingEvent <|.. TimeoutAlertTriggered
 
-    GPSLocation --* RoutingStarted
-    GPSLocation --* SOSAlertTriggered
-    GPSLocation --* SampledLocation
+    GPSLocation "1" <--* RoutingStarted
+    GPSLocation "1" <--* SOSAlertTriggered
+    GPSLocation "1" <--* SampledLocation
 
     '------------------------- Aggregates -------------------------'
     enum RoutingMode {
@@ -108,21 +133,17 @@ package domain {
         SOS
         ROUTING
         WARNING
+        INVALID(reason: String)
     }
 
-    interface Route {
-        + path: List[GPSLocation]
-    }
-
-    interface Tracking {
+    interface Tracking <<entity>> {
+        + type Route = List[GPSLocation]
         + route: Route
         + addSample(sample: SampledLocation): Tracking
         + +(sample: SampledLocation): Tracking
     }
 
-    Tracking *-right- Route
-
-    interface MonitorableTracking extends Tracking {
+    interface MonitorableTracking <<entity>> extends Tracking {
         + mode: RoutingMode
         + destination: GPSLocation
         + expectedArrival: Instant
@@ -132,16 +153,16 @@ package domain {
         + has(alert: Alert): Boolean
     }
 
-    MonitorableTracking o-- Alert
-    MonitorableTracking o-- RoutingMode
-    MonitorableTracking *-- GPSLocation
+    MonitorableTracking o-l-> Alert
+    MonitorableTracking *-r-> RoutingMode
+    MonitorableTracking *--> "1..n" GPSLocation
 
-    interface Session {
+    interface Session <<aggregate root>> {
         + scope: Scope
         + userState: UserState
-        + lastSampledLocation: SampledLocation
+        + lastSampledLocation: Option[SampledLocation]
         + tracking: Option[Tracking]
-        + updateWith(e: DrivingEvent): Session
+        + updateWith(e: DrivingEvent): Either[UserState.INVALID, Session]
     }
 
     Session *-left-> "1" Scope
@@ -153,137 +174,61 @@ package domain {
 @enduml
 ```
 
-- **`Scope`**: Represents the context in which an event occurs, it is composed of a user and a group, capturing the idea that a user's state can differ from group to group, enabling group-specific visibility and tracking.
-
-<!--
+- **`Scope`**: A _value object_ representing the context in which an event occurs. It is composed of a user and a group, capturing the idea that a user's state can differ from group to group, enabling group-specific visibility and tracking.
+- **`Tracking`**: An _entity_ representing the user's route information at a certain point in time, it is composed of a list of positions that can be interpolated to form a path between two geographical positions.
+  - **`MonitorableTracking`**: a specialized `Tracking` _entity_ that includes the mode of transportation, the destination, the expected arrival time, enabling the system to monitor the user's route and trigger alerts when necessary.
+- **`Session`**: An _aggregate root entity_ storing the overall state of a user in a group at a certain point in time. It acts as a state machine, updating the state and the tracking information based on the received events, ensuring the consistency of the user's state is maintained.
+- **`DomainEvent`**: An _interface_ representing the base structure of a domain event, capturing the timestamp, the user, and the group in which the event occurs. It is the base type for all the events that occur in the system.
+  - **`DrivingEvent`**: An _interface_ representing the base structure of a driving event, i.e. a valuable event guiding an application use case.
+    - **`ClientDrivingEvent`**: A specialized `DrivingEvent` _interface_ representing the events that are triggered by the user's actions, such as sampling the location, triggering an SOS alert, starting or stopping a routing.
+    - **`InternalDrivingEvent`**: A specialized `DrivingEvent` _interface_ representing the events that are triggered by the system, such as the user going offline, triggering a stuck alert, or a timeout alert.
+  - **`DrivenEvent`**: An _interface_ representing the base structure of a driven event, i.e. an event triggered by the system as a result of some system state change / action.
 
 ```plantuml
-@startuml location-service-structure
+@startuml location-service-infrastructure
 package application {
-    package domain {
-        interface GPSLocation <<value object>> {
-            + latitude: Double
-            + longitude: Double
-        }
 
-        class User <<entity>> {
-            + id: UserId
-            + inGroups: Set<GroupId>
-        }
-        class UserId <<value object>>
-        class GroupId <<value object>>
+    interface UserGroupsReader {
+        + groupsOf(user: UserId): Set[GroupId]
+        + membersOf(group: GroupId): Set[UserId]
+    }
+    interface UserGroupsWriter {
+        + addMemberk(groupId: GroupId, userId: UserId)
+        + removeMember(groupId: GroupId, userId: UserId)
+    }
+    interface UserGroupsStore <<repository>> <<out port>> extends UserGroupsReader, UserGroupsWriter 
 
-        User *-u- "N" UserId
-        User *-u- "N" GroupId
+    interface UserGroupsService <<service>> {
 
-        interface Event {
-            + timestamp: Date
-            + user: User
-        }
-
-        User "1" --* Event
-
-        interface StartRoutingEvent <<domain event>> extends Event {
-            + arrivalPosition: GPSLocation
-            + estimatedArrivalTime: Date
-        }
-
-        StartRoutingEvent *-- "1" GPSLocation
-
-        interface TrackingEvent <<domain event>> extends Event {
-            + position: GPSLocation
-
-        }
-
-        TrackingEvent *-- "1" GPSLocation
-
-        interface StopRoutingEvent <<domain event>> extends Event
-
-        interface SOSAlertEvent <<domain event>> extends Event {
-            + position: GPSLocation
-
-        }
-
-        SOSAlertEvent *-- "1" GPSLocation
-
-        interface Route <<aggregate root>> {
-            + event: StartRoutingEvent
-            + positions: List<TrackingEvent>
-            + addTrace(TrackingEvent: TrackingEvent): Route
-        }
-
-        Route *-u- "1" StartRoutingEvent
-        Route *-u- "N" TrackingEvent
     }
 
-    interface TrackingEventsReader <<outbound port>> {
-        + lastOf(user: User): TrackingEvent
-    }
-    interface TrackingEventsWriter <<outbound port>> {
-        + save(TrackingEvent: TrackingEvent)
-    }
-    interface TrackingEventsStore <<outbound port>> implements TrackingEventsReader, TrackingEventsWriter
-    TrackingEventsReader o.up. TrackingEvent
-    TrackingEventsWriter o.up. TrackingEvent
-
-    ' interface RoutesStore <<outbound port>> {
-    '     + update(Route: Route)
-    '     + by(user: User): Route
-    '     + delete(Route: Route)
-    ' }
-
-    ' RoutesStore o.up. Route
-
-    interface MapsService <<outbound port>> {
-        + estimateArrivalTime(start: GPSLocation, end: GPSLocation): Date
-        + distance(start: GPSLocation, end: GPSLocation): GPSLocation
+    interface NotificationService <<service>> {
     }
 
-    MapsService o.up. GPSLocation
+    interface UserSessionReader 
+    interface UserSessionWriter
+    interface UserSessionStore <<repository>> <<out port>> extends UserSessionReader, UserSessionWriter
 
-    interface UserTrackingInfoService <<inbound port>> {
-        + lastTraceOf(user: User): TrackingEvent
-        + routeOf(user: User): Route
-        + lastStateOf(user: User): State
+    interface UsersSessionService <<service>> {
     }
-    note right of UserTrackingInfoService::routeOf
-        At most 1
-        route per
-        user per
-        time is
-        active
-    end note
-    enum State {
-        + ACTIVE,
-        + INACTIVE,
-        + SOS,
-        + ROUTING
-    }
-    UserTrackingInfoService o.. State
 
-    class UserTrackingInfoServiceImpl implements UserTrackingInfoService
-    UserTrackingInfoServiceImpl *-- TrackingEventsReader
-
-    interface RealTimeTrackingService <<inbound port>> {
-        + handle(event: Event)
+    interface MapsService <<service>> {
     }
-    RealTimeTrackingService o.l. Event
-    class ActorBasedTrackingService implements RealTimeTrackingService
-    note top of RealTimeTrackingService
-        in charge of users real time
-        tracking management
-    end note
+
+    interface RealTimeTracking <<service>> {
+    }
+
 }
 @enduml
 ```
-
--->
 
 ### Behavior
 
 <!--
 The active controller of the system is based on top of Akka actors which allows for a scalable and fault-tolerant system without arranging a complex infrastructure for it.
 -->
+
+As an event driven architecture, the atate of each group's member can be described by the folloeing state diagram, drawing the possible state transitions that can be fired by one of the above `DrivingEvent`.
 
 ```plantuml
 @startuml userstate-behavior
@@ -294,22 +239,27 @@ state NormalMode {
     [*] --> Active
     Active --> Active : ""SampledLocation""
 
-    Active -left-> Inactive : ""WentOffline""
+    Active -left-> Inactive : ""WentOffline"" / trigger notification
     Inactive -right-> Active : ""SampledLocation""
 
+    Routing : entry [first time] / trigger notification
+    Routing : entry / perform checks 
     Active -down-> Routing : ""RoutingStarted""
-    Routing -up-> Active : ""RoutingStopped""
+    Routing -up-> Active : ""RoutingStopped"" \n / trigger notification
     Inactive --> Routing : ""RoutingStarted""
     Routing -> Routing : ""SampledLocation""
 
+    Warning : entry [not already notified the firing event] / trigger notification
     Routing --> Warning : ""WentOffline"", \n ""StuckAlertTriggered"", \n ""TimeoutAlertTriggered"" / ""late<-true""
-    Warning -up-> Routing : ""StuckAlertStopped"", \n ""SampledLocation"" [""!late""]
-    Warning -up-> Active : ""RoutingStopped""
-    Warning -> Warning : ""SampledLocation"" [""late""], \n ""TimeoutAlertTriggered"", \n ""StuckAlertTriggered""
+    Warning -up-> Routing : ""StuckAlertStopped"" [""!late""], \n ""SampledLocation"" [""!late""]
+    Warning -up-> Active : ""RoutingStopped"" \n / trigger notification 
+    Warning -> Warning : ""SampledLocation"" [""late""], \n ""TimeoutAlertTriggered"", \n ""StuckAlertTriggered"", \n ""StuckAlertStopped"" [""late""]
 }
 
 state SOSMode {
     [*] -> SOS
+    SOS : entry [first time] / trigger notification
+    SOS --> SOS : SampledLocation
 }
 
 NormalMode --> SOSMode : ""SOSAlertTriggered""
