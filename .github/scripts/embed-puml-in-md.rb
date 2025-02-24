@@ -56,7 +56,7 @@ def update_md(path, output_dir)
       <img 
         src="/#{File.join(output_dir, diagram_name)}-light.svg" 
         alt="#{diagram_name} schema" 
-        style="max-width: 1400px;"
+        style="max-width: 1100px;"
         class="schema"
       />
     </div>

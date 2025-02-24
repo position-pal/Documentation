@@ -3,7 +3,7 @@ weight: 202
 title: "Business Requirements"
 description: ""
 icon: "article"
-toc: true
+toc: false
 ---
 
 ## Glossary

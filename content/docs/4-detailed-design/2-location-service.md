@@ -38,7 +38,7 @@ package shared.kernel.domain {
     interface User <<entity>>
     interface UserId <<value object>>
     interface GroupId <<value object>>
-    User *-r-> "1" UserId
+    User *-left-> "1" UserId
 }
 
 package domain {
