@@ -1,10 +1,10 @@
 ---
-weight: 401
-title: "Location Service"
+weight: 402
+title: "Location Service design"
 description: ""
 icon: "article"
 draft: false
-toc: true
+toc: false
 ---
 
 The location service is responsible for the **real-time location _tracking_** and **management** of the **_users tracking information_**.
@@ -199,10 +199,18 @@ package application {
     interface UserGroupsStore <<repository>> <<out port>> extends UserGroupsReader, UserGroupsWriter 
 
     interface UserGroupsService <<service>> {
-
+        + addedMember(event: AddedMemberToGroup)
+        + removeMember(event: RemovedMemberFromGroup)
+        + groupsOf(userId: UserId): Set[GroupId]
+        + membersOf(groupId: GroupId): Set[UserId]
     }
 
+    '----------------------------------------------------'
+
     interface NotificationService <<service>> {
+        + sendToOwnGroup(scope: Scope, message: NotificationMessage)
+        + sendToGroup(recipient: GroupId, sender: UserId, message: NotificationMessage)
+        + sendToAllMembersSharingGroupWith(user: UserId, sender: UserId, message: NotificationMessage)
     }
 
     interface UserSessionReader 
@@ -228,7 +236,7 @@ package application {
 The active controller of the system is based on top of Akka actors which allows for a scalable and fault-tolerant system without arranging a complex infrastructure for it.
 -->
 
-As an event driven architecture, the atate of each group's member can be described by the folloeing state diagram, drawing the possible state transitions that can be fired by one of the above `DrivingEvent`.
+As an event driven architecture, the state of each group's member can be described by the following state diagram, drawing the possible state transitions that can be fired by one of the above `DrivingEvent`.
 
 ```plantuml
 @startuml userstate-behavior

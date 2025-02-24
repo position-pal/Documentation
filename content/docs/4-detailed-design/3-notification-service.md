@@ -1,6 +1,6 @@
 ---
-weight: 402
-title: "Notification Service"
+weight: 403
+title: "Notification Service design"
 description: ""
 icon: "article"
 draft: false
