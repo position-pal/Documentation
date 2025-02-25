@@ -13,6 +13,7 @@ markup:
       unsafe: true
 params:
   docs:
+    sidebarIcons: true
     darkMode: true
 menu:
   primary:

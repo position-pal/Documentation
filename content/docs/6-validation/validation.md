@@ -1,8 +1,8 @@
 ---
 weight: 500
 title: "Self Assessment and Validation"
-description: ""
-icon: "article"
+description: "Self assessment and validation of the system."
+icon: "Bug_Report"
 draft: false
 toc: true
 ---

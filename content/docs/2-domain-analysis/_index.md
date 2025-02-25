@@ -1,8 +1,8 @@
 ---
 weight: 200
 title: "Domain Analysis"
-description: ""
-icon: "folder"
+description: "Knowledge crunching"
+icon: "Engineering"
 draft: false
 toc: true
 ---

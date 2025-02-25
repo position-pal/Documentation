@@ -2,7 +2,6 @@
 weight: 201
 title: "Functional Requirements"
 description: ""
-icon: "article"
 toc: true
 ---
 

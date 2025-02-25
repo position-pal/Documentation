@@ -2,7 +2,6 @@
 weight: 403
 title: "Notification Service design"
 description: ""
-icon: "article"
 draft: false
 toc: false
 ---

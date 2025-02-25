@@ -2,7 +2,6 @@
 weight: 402
 title: "Location Service design"
 description: ""
-icon: "article"
 draft: false
 toc: false
 ---

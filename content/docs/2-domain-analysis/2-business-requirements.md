@@ -2,7 +2,6 @@
 weight: 202
 title: "Business Requirements"
 description: ""
-icon: "article"
 toc: false
 ---
 
