@@ -17,27 +17,33 @@ An example of arch unit test specification and rules used is shown below and can
 
 ```scala
 "Project-wise architecture" should "adhere to ports and adapters, a.k.a onion architecture" in:
-    val locationGroup = "io.github.positionpal.location"
-    val code = ClassFileImporter().importPackages(locationGroup)
-    onionArchitecture()
-      .domainModels(s"$locationGroup.commons..", s"$locationGroup.domain..")
-      .applicationServices(s"$locationGroup.application..", s"$locationGroup.presentation..")
-      .adapter("real time tracker component", s"$locationGroup.tracking..")
-      .adapter("storage", s"$locationGroup.storage..")
-      .adapter("message broker", s"$locationGroup.messages..")
-      .adapter("gRPC API", s"$locationGroup.grpc..")
-      .adapter("web sockets and http web API", s"$locationGroup.ws..")
-      .ignoreDependency(havingEntrypointAsOrigin, andAnyTarget)
-      .because("`Entrypoint` submodule contains the main method wiring all the adapters together.")
-      .ensureAllClassesAreContainedInArchitectureIgnoring(havingEntrypointAsOrigin)
-      .withOptionalLayers(true)
-      .check(code)
+  val locationGroup = "io.github.positionpal.location"
+  val code = ClassFileImporter().importPackages(locationGroup)
+  onionArchitecture()
+    .domainModels(s"$locationGroup.commons..", s"$locationGroup.domain..")
+    .applicationServices(s"$locationGroup.application..", s"$locationGroup.presentation..")
+    .adapter("real time tracker component", s"$locationGroup.tracking..")
+    .adapter("storage", s"$locationGroup.storage..")
+    .adapter("message broker", s"$locationGroup.messages..")
+    .adapter("gRPC API", s"$locationGroup.grpc..")
+    .adapter("web sockets and http web API", s"$locationGroup.ws..")
+    .ignoreDependency(havingEntrypointAsOrigin, andAnyTarget)
+    .because("`Entrypoint` submodule contains the main method wiring all the adapters together.")
+    .ensureAllClassesAreContainedInArchitectureIgnoring(havingEntrypointAsOrigin)
+    .withOptionalLayers(true)
+    .check(code)
 
-  private def havingEntrypointAsOrigin =
-    DescribedPredicate.describe[JavaClass]("in `entrypoint` package", _.getPackage.getName.contains("entrypoint"))
+private def havingEntrypointAsOrigin =
+  DescribedPredicate.describe[JavaClass]("in `entrypoint` package", _.getPackage.getName.contains("entrypoint"))
 
-  private def andAnyTarget = DescribedPredicate.alwaysTrue()
+private def andAnyTarget = DescribedPredicate.alwaysTrue()
 ```
+
+This uses the `onionArchitecture` rule to enforce the following architectural constraints:
+
+- the `domainModels` contains all the domain entities and do not depend on any other layer;
+- the `applicationServices` contains all the application services that are needed to run the application and use cases. They can use and see only the domain models and no other layer;
+- the `adapter`s modules contains logic to connect to external systems and/or infrastructure. They can see and use both the domain models and the application services, but no adapter can depend on another one.
 
 ## Unit tests
 
@@ -45,20 +51,29 @@ An example of arch unit test specification and rules used is shown below and can
 
 ## End-to-End tests
 
+As presented in the [Domain Analysis](/docs/2-domain-analysis/1-functional-requirements/) section, the system has been end-to-end validated and tested using Cucumber...
+
 <iframe src="https://position-pal.github.io/gateway/reports/cucumber-report.html" width="100%" height="700"></iframe>
 
 ## Quality Assurance
 
-For every language, different Quality Assurance (QA) tools are used to ensure the quality of the codebase.
+For all the projects and repositories, depending on the language they are developed in, different Quality Assurance (QA) tools have been used to validate the quality of the codebase.
+These tools ensure adherence to coding standards, maintainability, and early detection of potential issues, if appropriately integrated into Continuous Integration (as per DevOps best practices).
 
-For Scala, the following tools are used:
+The following tools have been used for Scala:
 
-- [`Scalafmt`](https://scalameta.org/scalafmt/)
-- [`Scalastyle`](http://www.scalastyle.org)
+- [`Scalafmt`](https://scalameta.org/scalafmt/): a code formatter ensuring consistency in code style across the project;
+- [`Scalafix`](http://www.scalafix.org): a tool for refactoring and linting Scala code, allowing automated fixes for common issues and ensuring best practices.
 
-For Kotlin, the following tools are used:
+The following tools have been employed for Kotlin:
 
-- [`ktlint`](https://ktlint.github.io)
-- [`detekt`](https://detekt.github.io/detekt)
+- [`ktlint`](https://ktlint.github.io): a linter and formatter that enforces Kotlin coding standards automatically;
+- [`detekt`](https://scalacenter.github.io/scalafix/): a static code analysis tool for Kotlin that helps identify code smells, complexity issues, and potential security risks.
 
-For Javascript, [`ESLint`](https://eslint.org) is used to enforce a coding style.
+For Javascript, [`ESLint`](https://eslint.org), a static analysis tool that enforces coding style rules and detects problematic patterns in JavaScript code.
+
+To further improve code quality and reliability, aggressive compilation options have been used across all projects. These options ensure that all warnings are treated as errors, preventing the introduction of potential issues into the codebase. This approach enforces strict compliance with best practices and minimizes the risk of overlooking important warnings that could lead to runtime errors or degraded maintainability.
+
+By integrating these QA tools and enforcing strict compilation settings, the project maintains high code quality, reduces technical debt, and ensures consistency across different languages and repositories.
+
+For more details on the QA tools and configuration used please refer to the [DevOps section](/docs/7-devops/devops/).
