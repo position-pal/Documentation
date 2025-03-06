@@ -61,11 +61,19 @@ an example of unit test
 
 ## Integration tests
 
+Vale--
+
 ## End-to-End tests
 
 As presented in the [Domain Analysis](/docs/2-domain-analysis/1-functional-requirements/) section, the system has been end-to-end validated and tested using Cucumber...
 
+Luke--
+
 <iframe src="https://position-pal.github.io/gateway/reports/cucumber-report.html" width="100%" height="700"></iframe>
+
+## Stress Test
+
+Gio--
 
 ## Quality Assurance
 
