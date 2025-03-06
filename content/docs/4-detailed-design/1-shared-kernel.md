@@ -29,13 +29,12 @@ package domain {
             + surname: String
             + email: String
         }
+        User *--> "1" UserId
 
         interface NotificationMessage <<entity>> {
             + title: String
             + body: String
         }
-
-        User *--> "1" UserId
     }
 
     package events {
@@ -70,10 +69,17 @@ package domain {
             + type: CommandType
         }
 
+        enum CommandType {
+            GROUP_WISE_NOTIFICATION
+            CO_MEMBERS_NOTIFICATION
+        }
+        Command *--> CommandType
+
         interface PushNotificationCommand extends Command {
             + sender: UserId
             + message: NotificationMessage
         }
+        NotificationMessage <---* PushNotificationCommand
 
         interface GroupWisePushNotification extends PushNotificationCommand {
             + recipient: GroupId
@@ -91,8 +97,8 @@ package domain {
         end note
 
         PushNotificationCommand *-up--> UserId
-        GroupWisePushNotification *-up--> GroupId
-        CoMembersPushNotification *-up--> UserId
+        GroupWisePushNotification *-up-> GroupId
+        CoMembersPushNotification *-up-> UserId
     }
 }
 

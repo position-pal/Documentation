@@ -156,6 +156,14 @@ package domain {
     MonitorableTracking *-r-> RoutingMode
     MonitorableTracking *--> "1..n" GPSLocation
 
+    class Snapshot <<value object>> {
+        + scope: Scope
+        + userState: UserState
+        + lastSampledLocation: Option[SampledLocation]
+    }
+
+    Session .. Snapshot
+
     interface Session <<aggregate root>> {
         + scope: Scope
         + userState: UserState
@@ -177,52 +185,93 @@ package domain {
 - **`Tracking`**: An _entity_ representing the user's route information at a certain point in time, it is composed of a list of positions that can be interpolated to form a path between two geographical positions.
   - **`MonitorableTracking`**: a specialized `Tracking` _entity_ that includes the mode of transportation, the destination, the expected arrival time, enabling the system to monitor the user's route and trigger alerts when necessary.
 - **`Session`**: An _aggregate root entity_ storing the overall state of a user in a group at a certain point in time. It acts as a state machine, updating the state and the tracking information based on the received events, ensuring the consistency of the user's state is maintained.
+  - A **`Snapshot`** is a _value object_ capturing a snapshot of the user's state.
 - **`DomainEvent`**: An _interface_ representing the base structure of a domain event, capturing the timestamp, the user, and the group in which the event occurs. It is the base type for all the events that occur in the system.
   - **`DrivingEvent`**: An _interface_ representing the base structure of a driving event, i.e. a valuable event guiding an application use case.
     - **`ClientDrivingEvent`**: A specialized `DrivingEvent` _interface_ representing the events that are triggered by the user's actions, such as sampling the location, triggering an SOS alert, starting or stopping a routing.
     - **`InternalDrivingEvent`**: A specialized `DrivingEvent` _interface_ representing the events that are triggered by the system, such as the user going offline, triggering a stuck alert, or a timeout alert.
   - **`DrivenEvent`**: An _interface_ representing the base structure of a driven event, i.e. an event triggered by the system as a result of some system state change / action.
 
+The application services interfaces are presented in the following diagram, which presents only the main interfaces, leaving out the implementation classes.
+
 ```plantuml
 @startuml location-service-infrastructure
 package application {
 
-    interface UserGroupsReader {
-        + groupsOf(user: UserId): Set[GroupId]
-        + membersOf(group: GroupId): Set[UserId]
-    }
-    interface UserGroupsWriter {
-        + addMemberk(groupId: GroupId, userId: UserId)
-        + removeMember(groupId: GroupId, userId: UserId)
-    }
-    interface UserGroupsStore <<repository>> <<out port>> extends UserGroupsReader, UserGroupsWriter 
+    package groups {
+        interface UserGroupsReader {
+            + groupsOf(user: UserId): Set[GroupId]
+            + membersOf(group: GroupId): Set[UserId]
+        }
+        interface UserGroupsWriter {
+            + addMemberk(groupId: GroupId, userId: UserId)
+            + removeMember(groupId: GroupId, userId: UserId)
+        }
+        interface UserGroupsStore <<repository>> <<out port>> extends UserGroupsReader, UserGroupsWriter 
 
-    interface UserGroupsService <<service>> {
-        + addedMember(event: AddedMemberToGroup)
-        + removeMember(event: RemovedMemberFromGroup)
-        + groupsOf(userId: UserId): Set[GroupId]
-        + membersOf(groupId: GroupId): Set[UserId]
-    }
-
-    '----------------------------------------------------'
-
-    interface NotificationService <<service>> {
-        + sendToOwnGroup(scope: Scope, message: NotificationMessage)
-        + sendToGroup(recipient: GroupId, sender: UserId, message: NotificationMessage)
-        + sendToAllMembersSharingGroupWith(user: UserId, sender: UserId, message: NotificationMessage)
+        interface UserGroupsService <<service>> {
+            + addedMember(event: AddedMemberToGroup)
+            + removeMember(event: RemovedMemberFromGroup)
+            + groupsOf(userId: UserId): Set[GroupId]
+            + membersOf(groupId: GroupId): Set[UserId]
+        }
+        class UserGroupsServiceImpl implements UserGroupsService
+        UserGroupsServiceImpl *--> UserGroupsStore
     }
 
-    interface UserSessionReader 
-    interface UserSessionWriter
-    interface UserSessionStore <<repository>> <<out port>> extends UserSessionReader, UserSessionWriter
-
-    interface UsersSessionService <<service>> {
+    package notifications {
+        interface NotificationService <<service>> <<out port>> {
+            + sendToOwnGroup(\n    scope: Scope,\n    message: NotificationMessage\n)
+            --
+            + sendToGroup(\n    recipient: GroupId,\n    sender: UserId,\n    message: NotificationMessage\n)
+            --
+            + sendToAllMembersSharingGroupWith(\n    user: UserId,\n    sender: UserId,\n   message: NotificationMessage\n)
+        }
+        abstract class NotificationServiceProxy implements NotificationService {
+            + send(command: PushNotificationCommand): Unit
+        }
     }
 
-    interface MapsService <<service>> {
+    package sessions {
+        interface UserSessionReader {
+            + sessionOf(scope: Scope): Option[Session]
+        }
+        interface UserSessionWriter {
+            + update(session: Session.Snapshot): Unit
+        }
+        interface UserSessionStore <<repository>> <<out port>> extends UserSessionReader, UserSessionWriter
+
+        interface UsersSessionService <<service>> <<in port>> {
+            + ofScope(scope: Scope): Option[Session]
+            + ofGroup(groupId: GroupId): Stream[Session]
+        }
+
+        class UsersSessionServiceImpl implements UsersSessionService
+        UsersSessionServiceImpl *-left-> UserSessionStore
+        UsersSessionServiceImpl *---> UserGroupsService
     }
 
-    interface RealTimeTracking <<service>> {
+    package tracking {
+        interface MapsService <<service>> <<out port>> {
+            + duration(mode: RoutingMode)(\n    origin: GPSLocation,\n    destination: GPSLocation\n): FiniteDuration
+            --
+            + distance(mode: RoutingMode)(\n    origin: GPSLocation,\n    destination: GPSLocation\n): Distance
+        }
+
+        interface OutcomeObserver <<service>> <<out port>> {
+            + type Outcome
+        }
+
+        interface RealTimeTracking <<service>> <<in port>> {
+            + handle(event: ClientDrivingEvent)
+            + addObserver(observer: OutcomeObserver)
+            + removeObserver(observer: OutcomeObserver)
+        }
+        RealTimeTracking *--> OutcomeObserver
+
+        abstract class RealTimeTracker implements RealTimeTracking 
+        RealTimeTracker *--> MapsService
+        RealTimeTracker *---> NotificationService
     }
 
 }

@@ -11,28 +11,27 @@ toc: false
 ```plantuml
 @startuml notification-service-structure
 
-package shared.kernel.domain {
-    interface User <<entity>>
-    interface UserId <<value object>>
-    interface GroupId <<value object>>
-    User *-r-> "1" UserId
-}
-
 package application {
 
     package domain {
 
         interface Token <<value object>> {}
 
-        interface UserToke <<entity>> {
+        interface UserToken <<entity>> {
             + userId: UserId
             + token: Token
         }
+        UserToken *-left-> "1" Token
     }
 
-    interface GroupsRepository
+    interface GroupsRepository <<repository>> <<out port>> {
+        + addMember(groupId: GroupId, userId: UserId): Result<Unit>
+        + removeMember(groupId: GroupId, userId: UserId): Result<Unit>
+        + getMembersOf(groupId: GroupId): Result<Set<UserId>>
+        + getGroupsOf(userId: UserId): Result<Set<GroupId>
+    }
 
-    interface NotificationPublisher {
+    interface NotificationPublisher <<service>> <<out port>> {
         + send(notificationMessage: NotificationMessage): PublishingTargetStrategy
         + send(message: NotificationMessage: userIds: Set<UserId>)
     }
@@ -42,16 +41,31 @@ package application {
         + toAllMembersSharingGroupWith(userId: UserId)
     }
 
-    interface UsersTokensRepository {
+    NotificationPublisher *--> "1" PublishingTargetStrategy
+
+    abstract class BasicNotificationPublisher implements NotificationPublisher {
+        + {abstract} send(message: NotificationMessage, userIds: Set<UserId>)
+    }
+    BasicNotificationPublisher *--> "1" GroupsRepository
+
+    interface UsersTokensRepository <<repository>> <<out port>> {
         + save(userToken: UserToken): Result<Unit>
         + get(userId: UserId): Result<UserToken>
         + delete(userToken: UserToken): Result<Unit>
     }
 
-    interface UsersTokensService {
+    interface UsersTokensService <<service>> <<in port>> {
         + register(userId: UserId, token: Token): Result<UserToken>
         + invalidate(userId: UserId, token: Token): Result<Unit>
     }
+
+    UsersTokensRepository *-left--> "1" UserToken
+    UsersTokensService *--> "1" UserToken
+    UsersTokensService *--> "1" Token
+
+    class UsersTokensServiceImpl implements UsersTokensService
+    UsersTokensServiceImpl *--> "1" UsersTokensRepository
+    
 
 }
 @enduml

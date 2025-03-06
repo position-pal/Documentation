@@ -7,11 +7,15 @@ draft: false
 toc: true
 ---
 
-Different types of _automated_ tests are in place to ensure the correctness of the system, as well as the quality of the software product as a whole.
+Different types of _automated_ tests, at different granularity, are in place to ensure the correctness of the system, as well as the quality of the software product as a whole.
+
+The testing strategy follows [Martin Fowler’s Test Pyramid idea](https://martinfowler.com/articles/practical-test-pyramid.html), which advocates for a higher number of low-level unit tests that are that are fast and cost-effective, complemented by fewer high-level integration and end-to-end tests that, while slower and more complex, validate the overall system's functionalities.
+
+Each type of test has been designed and executed accordingly, as detailed in the following sections.
 
 ## Architectural Testing
 
-[ArchUnit](https://www.archunit.org) have been used to enforce architectural constraints, making sure to adhere to the _Hexagonal architecture_ (otherwise said _Onion_ or _Ports and Adapters_) and preventing unwanted dependencies, maintaining separation of concerns and ensuring architectural decisions are consistently followed over time.
+[ArchUnit](https://www.archunit.org) have been used to enforce architectural constraints, making sure to adhere to the _Hexagonal architecture_ (also known as _Onion architecture_ or _Ports and Adapters_), preventing unwanted dependencies, maintaining separation of concerns and ensuring architectural decisions are consistently followed over time.
 
 An example of arch unit test specification and rules used is shown below and can be found [here](https://github.com/position-pal/location-service/blob/main/entrypoint/src/test/scala/io/github/positionpal/location/entrypoint/ArchitecturalTest.scala).
 
@@ -44,8 +48,16 @@ This uses the `onionArchitecture` rule to enforce the following architectural co
 - the `domainModels` contains all the domain entities and do not depend on any other layer;
 - the `applicationServices` contains all the application services that are needed to run the application and use cases. They can use and see only the domain models and no other layer;
 - the `adapter`s modules contains logic to connect to external systems and/or infrastructure. They can see and use both the domain models and the application services, but no adapter can depend on another one.
+- the only exception applies to the `entrypoint` package that contains the main application entrypoint and, thus, need to see and use the various adapters to wire all up together.
 
 ## Unit tests
+
+Unit tests are at the lowest level of the pyramid. 
+Their goal is to test a small piece, very often simply some classes, behaves like expected.
+
+the advantage of kotest and scala test as DSL... 
+
+an example of unit test
 
 ## Integration tests
 
