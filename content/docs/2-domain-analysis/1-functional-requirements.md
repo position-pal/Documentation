@@ -9,7 +9,27 @@ In this section are collected the **functional requirements** of the system in t
 
 ## User Stories
 
-### Users and groups
+### Users Management
+
+<em>
+
+1. As a new user \
+   I want to register with the system using my details \
+   So that I can access the application's features
+
+2. As a registered user \
+   I want to log in with my credentials \
+   So that I can access my account and use the application
+
+3. As a logged user \
+   I want to update my profile information \
+   So that I can keep my personal details current
+
+4. As a logged user \
+   I want to delete my profile \
+   So that I can remove my data from the system when I no longer wish to use it
+
+</em>
 
 ### Location tracking
 
@@ -81,6 +101,27 @@ Following BDD principles, starting from the above user stories, a set of accepta
 These specifications are written in Gherkin using [Cucumber](https://cucumber.io), providing a structured and human-readable format that facilitates communication between stakeholders, even for those who have not a technical background.
 Moreover, they serve end-to-end tests, ensuring that the system meets the defined requirements while aligning with end users' expectations and needs (see the [Validation section]() for more details about tests).
 By leveraging this approach, the tests remain clear, maintainable, and closely tied to business objectives.
+
+### User Management
+
+```gherkin
+  Scenario: Register a New User
+    Given that the user is not yet registered
+    When registering with valid details
+    Then the system successfully registers the user
+
+  Scenario: Login with Valid Credentials
+    Given logged user with the correct email and password
+    When system returns a valid authentication token
+    Then authentication token can be use to authorize requests
+
+  Scenario: Update User Profile
+    Given new user logged in
+    When updating the profile information
+    Then the system successfully updates the user data
+    When requesting the deletion of the user profile
+    Then the system deletes the user data and confirms the deletion
+```
 
 ### Location tracking
 
