@@ -52,22 +52,64 @@ This uses the `onionArchitecture` rule to enforce the following architectural co
 
 ## Unit tests
 
-Unit tests are at the lowest level of the pyramid. 
-Their goal is to test a small piece, very often simply some classes, behaves like expected.
+Unit tests, which sit at the lowest level of the testing pyramid, focus on verifying that small pieces of code—often individual classes—behave as expected.
 
-the advantage of kotest and scala test as DSL... 
-
-an example of unit test
+Leveraging testing DSLs frameworks like [Kotest](https://kotest.io) and [ScalaTest](http://www.scalatest.org) tests can be crafted in a clear and succinct way, enhancing their comprehensibility and maintenance.
 
 ## Integration tests
 
 Vale--
 
+Requires bring up the single components like RabbitMQ, Cassandra...
+
 ## End-to-End tests
 
-As presented in the [Domain Analysis](/docs/2-domain-analysis/1-functional-requirements/) section, the system has been end-to-end validated and tested using Cucumber...
+End-to-End tests are the heaviest and slowest tests, as they validate the system as a whole, simulating real user interactions and scenarios.
 
-Luke--
+These tests are placed in the access point of the system, i.e., the API gateway, and to be run against the whole system requires the local deployment of all the services along with a mocked version of the client app to make it possible to test real system notifications and interactions in a controlled and repeatable way.
+
+For this purpose a local deployment infrastructure has been set up using Docker Compose (more details on the Deployment section) with a custom template resolution strategy to allow the gateway test lifecycle to:
+
+1. package in a Docker image the gateway service with the latest changes;
+2. package the mocked client application in a Docker image;
+3. bring up all the system microservices along with the gateway and the mocked client application;
+4. run the end-to-end tests against the system;
+5. tear down the whole system.
+
+As presented in the [Domain Analysis](/docs/2-domain-analysis/1-functional-requirements/) section, the system has been end-to-end validated and tested using Gherking and Cucumber-JS libraries, along with [Puppeteer](https://pptr.dev) for browser automation and interactions.
+
+An example of a feature implementation is presented hereafter:
+
+```js
+When("I have arrived at the destination", async () => {
+  await this.hanWs.send(JSON.stringify(sample(global.han.userData.id, global.astro.id, cesenaCampusLocation)));
+});
+
+Then("the routing is stopped", { timeout: 20_000 }, async () => {
+  await eventually(async () => {
+    expect(
+      receivedUpdates.some((update) => 
+        update.UserUpdate.user === global.han.userData.id && update.UserUpdate.status === "Active"
+      ),
+    ).to.be.true;
+  }, 15_000);
+});
+
+Then("my state is updated to `Active`", { timeout: 15_000 }, async () => {
+  await eventually(async () => {
+    await expectSuccessfulGetRequest(
+      `/api/session/state/${global.astro.id}/${global.han.userData.id}`,
+      global.han.token,
+      {
+        status: { code: "OK" },
+        state: "ACTIVE",
+      },
+    );
+  }, 10_000);
+});
+```
+
+The full suite of end-to-end features and tests can be found [here](https://github.com/position-pal/gateway/tree/main/tests/features) and the report of the last run can be found below:
 
 <iframe src="https://position-pal.github.io/gateway/reports/cucumber-report.html" width="100%" height="700"></iframe>
 

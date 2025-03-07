@@ -28,6 +28,27 @@ Based on the above non-functional requirements, the team has identified the foll
 
 ## Quality Attributes Scenarios
 
+### Runtime
+
+Vale--
+
+Security
+
+Performance
+
+User friendliness
+
+
+Gio--
+
+Observability
+
+Availability
+
+Reliability
+
+Scalability
+
 ### Development Time
 
 #### Testability
@@ -74,22 +95,3 @@ Based on the above non-functional requirements, the team has identified the foll
 - ***Response***: The development team isolates the issue, applies a fix, and deploys it without affecting other modules.
 - **Response Measure**:
   - ✅ **Pass Condition**: No new regression failures are detected in automated tests post-deployment.
-
-Vale--
-
-Security
-
-Performance
-
-User friendliness
-
-
-Gio--
-
-Observability
-
-Availability
-
-Reliability
-
-Scalability
