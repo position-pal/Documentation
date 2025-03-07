@@ -79,6 +79,8 @@ LOC_SUB -(0- MB_SUB_GRPS : <<publish>>
 @enduml
 ``` -->
 
+### Notification service
+
 ```plantuml
 @startuml arch-cc-notification
 '========================== Styling =========================='
@@ -115,14 +117,9 @@ NOT_SUB_NOTIF -0)- MB_SUB_NOTIF
 In compliance with DDD principles, the microservices are designed following the **Hexagonal Architecture** pattern (also known as _Ports and Adapters_ or _Onion Architecture_), which is a particular instantiation of the layered architecture, that is well-suited for microservices to preserve models' integrity.
 Indeed, the primary advantage of this pattern is the separation of concerns, which allows the business logic to be decoupled from the infrastructure and the external systems (e.g., databases, message brokers, etc.) hence making the system more maintainable and testable, and the business logic more reusable.
 
-{{/* < figure src="https://herbertograca.com/wp-content/uploads/2018/11/070-explicit-architecture-svg.png" 
-alt="Hexagonal Architecture"
-link="https://herbertograca.com/2017/11/16/explicit-architecture-01-ddd-hexagonal-onion-clean-cqrs-how-i-put-it-all-together/"
-title="Hexagonal Architecture"
-attr="Photo by hgraca" 
-attrlink="https://herbertograca.com/2017/11/16/explicit-architecture-01-ddd-hexagonal-onion-clean-cqrs-how-i-put-it-all-together/" > */}}
+![Hexagonal Architecture](https://herbertograca.com/wp-content/uploads/2018/11/070-explicit-architecture-svg.png)
 
-Each layer of the Hexagonal Architecture has been enforced in the code by mapping them into modules (Gradle sub-projects) each of which with its own build dependencies and responsibilities, as shown in the following diagram:
+Each layer of the Hexagonal Architecture has been enforced in the code by mapping them into modules (like Grade submodules) each of which with its own build dependencies and responsibilities, as shown in the following diagram:
 
 ```plantuml
 @startuml hexagonal-architecture
@@ -155,7 +152,7 @@ note top of storage
     Here resides all the 
     code that ensures 
     data persistence 
-    (persistence adapter)
+    (storage adapters)
 end note
 artifact "DB client library" <<third-party>> as DB_LIB
 storage -left-|> DB_LIB
@@ -174,9 +171,19 @@ mom -up-|> presentation
 api -up-|> presentation
 
 folder entrypoint
+note left of entrypoint
+    The service entrypoint where all
+    the adapters are wired together
+    and the main application 
+    is started
+end note
 entrypoint -up-|> api
 entrypoint -up-|> mom
 entrypoint -up-|> storage
+
+note "Two examples of adapters" as AD
+api .. AD
+mom .. AD
 
 @enduml
 ```

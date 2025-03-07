@@ -31,6 +31,8 @@ In this section are collected the **functional requirements** of the system in t
 
 </em>
 
+`TODO: missing groups`
+
 ### Location tracking
 
 <em>
@@ -99,7 +101,7 @@ In this section are collected the **functional requirements** of the system in t
 
 Following BDD principles, starting from the above user stories, a set of acceptance test specifications have been defined.
 These specifications are written in Gherkin using [Cucumber](https://cucumber.io), providing a structured and human-readable format that facilitates communication between stakeholders, even for those who have not a technical background.
-Moreover, they serve end-to-end tests, ensuring that the system meets the defined requirements while aligning with end users' expectations and needs (see the [Validation section]() for more details about tests).
+Moreover, they serve end-to-end tests, ensuring that the system meets the defined requirements while aligning with end users' expectations and needs (see the [Validation section](/docs/6-validation/validation/) for more details about tests).
 By leveraging this approach, the tests remain clear, maintainable, and closely tied to business objectives.
 
 ### User Management

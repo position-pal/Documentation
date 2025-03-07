@@ -9,7 +9,7 @@ toc: true
 
 <br>
 
-# What is PositionPal?
+## What is PositionPal?
 
 PositionPal is a **micro-services-based** application for creating **groups** of **trusted** users with whom to **share location**, **routes**, and **notify of dangerous or emergency situation** to create an _effective_ and _timely_ service and _support network_.
 
