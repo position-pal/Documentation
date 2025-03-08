@@ -3,6 +3,7 @@ weight: 301
 title: "Bounded Contexts"
 description: ""
 toc: true
+mermaid: true
 ---
 
 Following the event storming session, the subsequent bounded contexts have been identified:
@@ -13,8 +14,9 @@ Following the event storming session, the subsequent bounded contexts have been 
 - **Notifications**: it is responsible for managing the notifications, including the push notifications to the users' devices.
 - **Chat**: it is responsible for managing the chat between the users and the groups' members.
 
-In the following sections, we will provide a detailed view of each bounded context, including its _Ubiquitous Language_ and the _Events_ guiding the interactions between the different contexts.
-These can be categorized as _Driving Events_ and _Driven Events_: the former are the events triggered by the user's actions and that drives an application use case, while the latter are the events that are triggered by the system as a reaction to a use case or a system state change.
+In the following sections, we will provide a detailed view of each bounded context, including its **_Ubiquitous Language_**, the **_Commands_** and the **_Events_** guiding the interactions between the different contexts.
+These can be categorized as **_Driving_** or **_Driven Events_**: the former are the events triggered by the user's actions and that drives an application use case, while the latter are the events that are triggered by the system as a reaction to a use case or a system state change.
+Moreover we distinguish between _Commands_ and _Events_ to highlight the difference between a request to perform an action (_Command_) and the notification of something meaningful that has happened (_Event_):
 
 ## Users Management
 
@@ -32,6 +34,8 @@ These can be categorized as _Driving Events_ and _Driven Events_: the former are
 
 ### Ubiquitous Language
 
+{{< table "table-striped " >}}
+
 | Concept  | Description | Synonyms |
 | -------- | ----------- | -------- |
 | **Location** | A specific point on a geographical plane, represented by coordinates that indicates where something / someone is located. | Position |
@@ -41,32 +45,47 @@ These can be categorized as _Driving Events_ and _Driven Events_: the former are
 | **State**    | State of a user at a certain time, the values that it could assume are: online, offline, SOS, Routing, Warning. | |
 | **Session**  | An aggregation of the user's tracking information, the state and last location of a user in a certain period of time. | |
 
+{{< /table >}}
+
 ### Events
 
-| Event Type | Event Name | Description |
+{{< table "table-striped" >}}
+
+| 🏷️ Event Type | Event Name | Description |
 | ---------- | ---------- | ----------- |
-| *Driving event* | **SampledLocation** | The event sent from the client application to update the user's location. |
-| *Driving event* | **RoutingStarted** | The event sent from the client application to start the user's route tracking towards a destination. |
-| *Driving event* | **RoutingStopped** | The event sent from the client application to stop the user's route tracking. |
-| *Driving event* | **SOSAlertTriggered** | The event sent from the client application to trigger an SOS alert, carrying the user's location. |
-| *Driving event* | **SOSAlertStopped** | The event sent from the client application to stop the SOS alert. |
-| *Driven event* | **UserUpdate** | The event sent from the Location Service to notify the client application about the user's state or location update. |
+| **🚀 Driving event** | **SampledLocation** | The event sent from the client application to update the user's location. |
+| | **RoutingStarted** | The event sent from the client application to start the user's route tracking towards a destination. |
+| | **RoutingStopped** | The event sent from the client application to stop the user's route tracking. |
+| | **SOSAlertTriggered** | The event sent from the client application to trigger an SOS alert, carrying the user's location. |
+| | **SOSAlertStopped** | The event sent from the client application to stop the SOS alert. |
+| **📥 Driven event** | **UserUpdate** | The event sent from the Location Service to notify the client application about the user's state or location update. |
+
+{{< /table >}}
 
 ## Notifications
 
 ### Ubiquitous Language
 
+{{< table "table-striped" >}}
+
 | Concept  | Description | Synonyms |
 | -------- | ----------- | -------- |
 | **Push notification** | A real-time message sent to a user's device to inform about a relevant event. | |
 | **Notification message** | The actual content of the push notification that is displayed to the user. | |
-| **Registration token** | A unique token associated with a user's device for sending push notifications. |
+| **Registration token** | A unique token associated with a user's device for sending push notifications. | Token, Device Token |
 
-### Events
+{{< /table >}}
 
-| Event Type | Event Name | Description |
-| ---------- | ---------- | ----------- |
-| 
+### Commands
+
+{{< table "table-striped" >}}
+
+| Command | Description |
+| ------- | ----------- |
+| **Group Wise Push Notification** | A push notification to be sent to all the members of a group. |
+| **Co Members Push Notification** | A push notification to be sent to all users sharing at least one group with a specific user. |
+
+{{< /table >}}
 
 ## Chat
 
@@ -74,6 +93,14 @@ These can be categorized as _Driving Events_ and _Driven Events_: the former are
 
 ### Events
 
+## Bounded Context Integration
 
+The boundary of each bounded context delineates the scope of the context: models in different bounded context can be evolved and implemented independently, but they need to be integrated to provide a coherent service to the users.
+
+DDD provides a set of patterns for defining relationship and integrations between bounded contexts to be reified in the so-called **Context Map**, a visual representation of the system's bounded contexts and the relationships between them.
+
+The following diagram shows the context map of the PositionPal system:
 
 ![Context Map](/images/context-map.svg)
+
+...
