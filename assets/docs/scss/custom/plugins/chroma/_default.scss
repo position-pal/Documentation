@@ -1,0 +1,83 @@
+/* Improved Chroma CSS */
+:root {
+    --code-bg: #292c41;
+    --code-text: #f5fbff;
+    --code-shadow: rgba(45, 44, 44, 0.5);
+    --code-border: rgba(255, 255, 255, 0.1);
+    --code-highlight: rgba(255, 255, 255, 0.05);
+  }
+  
+/* Main container for code blocks */
+.docs-content .main-content div.highlight {
+    background-color: var(--code-bg);
+    border-radius: 0.5rem;
+    overflow: auto;
+    box-shadow: 5px 5px 10px var(--code-shadow);
+    border: 1px solid var(--code-border);
+    margin: 1.5rem 0;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+    padding: 1.5rem 2rem;
+}
+
+/* Hover effect for code blocks */
+.docs-content .main-content div.highlight:hover {
+    box-shadow: 6px 6px 18px var(--code-shadow);
+    transform: translateY(-2px);
+}
+
+/* Inline code styling */
+.docs-content .main-content code {
+    color: var(--text-default);
+    font-family: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, 'Andale Mono', monospace;
+    padding: 0.2em 0.4em;
+    border-radius: 0.3em;
+}
+
+/* Code block container */
+.docs-content .main-content pre {
+    background-color: var(--code-bg) !important;
+    margin: 0;
+    overflow-x: auto;
+}
+
+/* Code within code blocks */
+.docs-content .main-content pre code {
+    color: var(--code-text);
+    background: transparent;
+    padding: 0;
+    line-height: 1.6;
+    tab-size: 2;
+}
+
+/* Optional line numbers for code */
+.docs-content .main-content pre.line-numbers {
+    position: relative;
+    padding-left: 3.5rem;
+    counter-reset: line;
+}
+
+.docs-content .main-content pre.line-numbers code {
+    position: relative;
+}
+
+.docs-content .main-content pre.line-numbers code::before {
+    content: counter(line);
+    counter-increment: line;
+    position: absolute;
+    left: -2.5rem;
+    width: 2rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: right;
+}
+
+/* Highlight effect for code lines on hover */
+.docs-content .main-content pre code .line:hover {
+    background-color: var(--code-highlight);
+}
+
+/* Better contrast for links within code */
+.docs-content .main-content pre a {
+    color: #63b3ed;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}

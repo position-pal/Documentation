@@ -24,13 +24,33 @@ This is because one can see the close interaction between these two domain entit
 Moreover, to aggregate the functionalities of the different microservices, we have chosen to use the **API Gateway** pattern. This pattern is used to aggregate the functionalities of the architecture, providing a single entry point for the client applications.
 The API Gateway is responsible for routing the requests to the appropriate service, aggregating the responses, and providing a unified interface to the client applications.
 
-## C&C View
+## Architecture Documentation
 
-The following diagram shows the _Component and Connector_ (C&C) view of the system, providing a high-level picture of the system's runtime entities in action and their boundaries.
+### High-Level Overview
+
+**To address the challenges of scalability, decoupling, and real-time processing, the system's architecture was designed following an event-driven microservice approach, in which the microservices are mainly designed to _interact_ by means of event streams.**
+
+This paradigm enables _asynchronous communication_ between the services, allowing them to be _loosely coupled_ and _independent_ from each other, hence making the system more _resilient_ and _maintainable_.
+
+For this purpose, the architecture is designed around a **Message/Event Broker**, which acts as a central communication hub for the microservices, enabling them to _publish_ and _subscribe_ to events, and _exchange messages_ in a _reliable_ and _scalable_ way.
+
+Nonetheless, regarding the communications between the client and the microservices through the API Gateway, an RPC protocol is used, in order to ensure synchronous communication.
+This approach enables the client to _invoke_ remote procedures on the microservices and receive a response in a synchronous manner (e.g. for the authentication process).
+
+Lastly, each microservice follow the best practice of having **its own database**, ensuring _data isolation_ and _independence_ from other services, allowing a _loosely coupled_ architecture whose communications happen **only** through the message broker via a standard protocol.
+This has also the advantage of letting the developers change a service's schema without affecting, and thus coordinating, with other services teams.
+
+Following these high-level principles, in the following sections we provide a detailed view of the system's architecture, though the three main strucutural views: _Components and Connectors_, _Modules_ and _Allocation_.
+
+### C&C View
+
+The following diagrams shows the _Component and Connector_ (C&C) view of the system, providing a high-level picture of the system's runtime entities in action and their boundaries.
 
 In order to avoid overwhelming the reader with an all-encompassing but rather confusing scheme, we provide below a C&C view of the system by providing, for each microservice, its relative UML diagram.
 
-### Location Service
+#### Location Service
+
+
 
 ```plantuml
 @startuml arch-cc-location
@@ -79,7 +99,7 @@ LOC_SUB -(0- MB_SUB_GRPS : <<publish>>
 @enduml
 ``` -->
 
-### Notification service
+#### Notification service
 
 ```plantuml
 @startuml arch-cc-notification
@@ -110,7 +130,7 @@ NOT_SUB_NOTIF -0)- MB_SUB_NOTIF
 @enduml
 ```
 
-## Deployment View
+### Deployment View
 
 ## Hexagonal Architecture
 

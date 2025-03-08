@@ -5,4 +5,4 @@ description: ""
 toc: true
 ---
 
-Qua inserire il diagramma dei bounded context e descrivere per ciascuno Ubiquitous Language ed Eventi.
+![Context Map](/images/context-map.svg)

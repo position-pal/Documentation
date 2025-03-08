@@ -37,8 +37,8 @@ An example of arch unit test specification and rules used is shown below and can
     .withOptionalLayers(true)
     .check(code)
 
-private def havingEntrypointAsOrigin =
-  DescribedPredicate.describe[JavaClass]("in `entrypoint` package", _.getPackage.getName.contains("entrypoint"))
+private def havingEntrypointAsOrigin = DescribedPredicate
+  .describe[JavaClass]("in `entrypoint` package", _.getPackage.getName.contains("entrypoint"))
 
 private def andAnyTarget = DescribedPredicate.alwaysTrue()
 ```
@@ -60,7 +60,7 @@ Leveraging testing DSLs frameworks like [Kotest](https://kotest.io) and [ScalaTe
 
 Vale--
 
-Requires bring up the single components like RabbitMQ, Cassandra...
+Requires bring up the single component to test and mock the others...
 
 ## End-to-End tests
 
@@ -82,7 +82,9 @@ An example of a feature implementation is presented hereafter:
 
 ```js
 When("I have arrived at the destination", async () => {
-  await this.hanWs.send(JSON.stringify(sample(global.han.userData.id, global.astro.id, cesenaCampusLocation)));
+  await this.hanWs.send(
+    JSON.stringify(sample(global.han.userData.id, global.astro.id, cesenaCampusLocation))
+  );
 });
 
 Then("the routing is stopped", { timeout: 20_000 }, async () => {
