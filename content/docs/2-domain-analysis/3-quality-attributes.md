@@ -38,10 +38,17 @@ Performance
 
 User friendliness
 
-
-Gio--
-
-Observability
+#### Observability
+**Stimulus**: On or more services in the system is not responding as expected.
+**Stimulus Source**: Monitoring service detect and report the anomaly.
+**Environment**: The system operating in normal state in a production enviroment.
+**Artifact**: The monitoring service.
+**Response**: The monitoring service logs the anomaly and sends an alert to the system administrator.
+**Response Measure**: 
+    - ✅ **Pass Condition**: The system administrator receives the alert in less than 1 minute.
+    - ✅ **Pass Condition**: The alert contains the service name, the error message, and the timestamp of the anomaly.
+    - ✅ **Pass Condition**: The alert is sent to the system administrator via email, a messaging service, or a dedicated monitoring platform.
+    - ✅ **Pass Condition**: The alert is logged in the monitoring system for future reference.
 
 #### Reliability
 
@@ -51,6 +58,7 @@ Observability
 **Artifact**: The affected service(s).
 **Response**: The infrastructure of the system automatically detects the failure and tries to restore the affected service(s), ensuring that no data is lost or corrupted.
 **Response Measure**: The service(s) returns to operate normally if they can be restored, otherwise they will be replaced by a new operational instance.
+    - ✅ **Pass Condition**: The system is able to restore the service(s) within 30 seconds.
 
 #### Availability
 
@@ -59,7 +67,8 @@ Observability
 **Environment**: The system operating in normal state in a production enviroment.
 **Artifact**: The service that becomes unavailable.
 **Response**: The infrastructure of the system automatically detects the failure and tries to redirect the trafic in another replica if this is available, otherwise an error is reported to the monitoring system.
-**Response Measure**: The system remains available with a downtime of less than 5 minutes.
+**Response Measure**: 
+    - ✅ **Pass Condition**: The system is able to redirect the trafic to another replica within 1 minute.
 
 #### Scalability
 
@@ -68,8 +77,8 @@ Observability
 **Environment**: The system operating on an high load in a production enviroment.
 **Artifact**: Services of the system with huge amount of requests registered.
 **Response**: The infrastructure that hosts the system will automatically create new replicas of the services that are under high load, and will redirect the trafic to the new replicas.
-**Response Measure**: System is able to serve all the requests with a response time of less than 3.5 second on the 98% of the requests.
-
+**Response Measure**: 
+    -  ✅ **Pass Condition**: System is able to serve all the requests with a response time of less than 3.5 second on the 98% of the requests.
 
 ### Development Time
 
