@@ -14,19 +14,6 @@ The design is based on the **Domain-Driven Design** principles, focusing on the 
 
 ## Abstract Design
 
-<!--
-
-### Main domain concepts (from knowledge crunching)
-
-| Concept  | Description                                                                                                              | Synonyms |
-| -------- | ------------------------------------------------------------------------------------------------------------------------ | -------- |
-| Location | A specific point on a geographical plane, represented by coordinates that indicates where something / someone is located | Position |
-| Route    | A set of positions that can be interpolated forming a path between two geographical positions                            | Path     |
-| Tracking | Represent the user route information at a certain point in time                                                          |          |
-| State    | State of a user at a certain time, the values that it could assume are: online, offline and SOS                          |          |
-
--->
-
 ### Structure
 
 The main domain concepts and events are presented hereafter and reified in the following classes structure, following the DDD building blocks.
