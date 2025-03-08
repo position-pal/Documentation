@@ -55,7 +55,6 @@ In order to avoid overwhelming the reader with an all-encompassing but rather co
 ```plantuml
 @startuml arch-cc-location
 '========================== Styling =========================='
-left to right direction
 skinparam component {
     BackgroundColor<<external>> White
     BackgroundColor<<executable>> #e3f6e3
@@ -88,8 +87,8 @@ queue ":Message \n broker" <<infrastructure>> {
     portin "Publish \n notifications" as MB_PUB_NOTIF
     portin "Subscribe \n groups events" as MB_SUB_GRPS
 }
-LOC_PUB -(0- MB_PUB_NOTIF : <<subscribe>>
-LOC_SUB -(0- MB_SUB_GRPS : <<publish>>
+LOC_PUB -(0- MB_PUB_NOTIF : <<publish>>
+LOC_SUB -(0- MB_SUB_GRPS : <<subscribe>>
 @enduml
 ```
 <!-- 
