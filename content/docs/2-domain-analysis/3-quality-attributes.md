@@ -43,11 +43,33 @@ Gio--
 
 Observability
 
-Availability
+#### Reliability
 
-Reliability
+**Stimulus**: An error occours in one of the system services.
+**Stimulus Source**: An exception (of any nature) throwed inside a service program.
+**Environment**: The system operating in normal state in a production enviroment.
+**Artifact**: The affected service(s).
+**Response**: The infrastructure of the system automatically detects the failure and tries to restore the affected service(s), ensuring that no data is lost or corrupted.
+**Response Measure**: The service(s) returns to operate normally if they can be restored, otherwise they will be replaced by a new operational instance.
 
-Scalability
+#### Availability
+
+**Stimulus**: Due an internal error occours, a service becomes unavailable.
+**Stimulus Source**: Hardware or network error.
+**Environment**: The system operating in normal state in a production enviroment.
+**Artifact**: The service that becomes unavailable.
+**Response**: The infrastructure of the system automatically detects the failure and tries to redirect the trafic in another replica if this is available, otherwise an error is reported to the monitoring system.
+**Response Measure**: The system remains available with a downtime of less than 5 minutes.
+
+#### Scalability
+
+**Stimulus**: An huge amount of requests are performed to one or more services in the system.
+**Stimulus Source**: Users that tries to access the system.
+**Environment**: The system operating on an high load in a production enviroment.
+**Artifact**: Services of the system with huge amount of requests registered.
+**Response**: The infrastructure that hosts the system will automatically create new replicas of the services that are under high load, and will redirect the trafic to the new replicas.
+**Response Measure**: System is able to serve all the requests with a response time of less than 3.5 second on the 98% of the requests.
+
 
 ### Development Time
 
