@@ -27,7 +27,7 @@ defaults:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       HUGO_VERSION: 0.142.0
     steps:
@@ -74,3 +74,16 @@ jobs:
           branch: main
           folder: public
           repository-name: position-pal/position-pal.github.io
+
+  success:
+    needs: build-and-deploy
+    if: >- # run if at least one needed job has failed or all needed jobs have not been cancelled
+      always() && (
+        contains(join(needs.*.result, ','), 'failure')
+        || !contains(join(needs.*.result, ','), 'cancelled')
+      )
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Verify no failures occurred in needed jobs
+        # if there are failures, false is executed and the job fails.
+        run: ${{ !contains(join(needs.*.result, ','), 'failure') }}

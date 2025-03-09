@@ -18,7 +18,7 @@ Finally, **read models**, or whatever information the system needs to show the u
 
 **Glossary**:
 
-{{ <table >}}
+{{< table >}}
 
 | Sticky note color | Concept | Description |
 | ----------------- | ------- | ----------- |
@@ -30,7 +30,7 @@ Finally, **read models**, or whatever information the system needs to show the u
 | 🏻 | **System** | An internal or external component of the application. | 
 | 🟥 | **Hotspot** | An internal system constraint / some important note. |
 
-{{ </table >}}
+{{< /table >}}
 
 <div style="width: 100%%; overflow-x: auto; white-space: nowrap;">
     <img 
