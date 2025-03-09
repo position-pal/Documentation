@@ -1,5 +1,5 @@
 ---
-weight: 700
+weight: 800
 title: "Deployment"
 description: "Deployment infrastructure"
 icon: "Deployed_Code"

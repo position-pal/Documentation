@@ -7,6 +7,8 @@ toc: false
 
 ## Glossary
 
+??
+
 ## Use cases
 
 ### Location Tracking

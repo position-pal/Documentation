@@ -16,3 +16,10 @@ These are arranged in temporal sequence so as to create a timeline representing 
 This is followed by the identification of **commands**, i.e., actions that can be performed on the system by an actor, and **policies** by which the system reacts, going on to enrich the timeline by following the flow of events and actions.
 Finally, **read models**, or whatever information the system needs to show the user, are highlighted.
 
+<div style="width: 100%%; overflow-x: auto; white-space: nowrap;">
+    <img 
+        src="https://raw.githubusercontent.com/position-pal/Documentation/ebc2539a7e0359566c4df6faeb3fe2b2f7f0b984/assets/images/event-storming.svg" 
+        alt="Event Storming session" 
+        style="display: inline-block; max-width: none;"
+    />
+</div>

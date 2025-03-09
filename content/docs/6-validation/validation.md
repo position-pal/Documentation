@@ -1,5 +1,5 @@
 ---
-weight: 500
+weight: 600
 title: "Self Assessment and Validation"
 description: "Self assessment and validation of the system."
 icon: "Bug_Report"
