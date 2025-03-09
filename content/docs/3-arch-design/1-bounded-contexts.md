@@ -40,6 +40,7 @@ Moreover we distinguish between _Commands_ and _Events_ to highlight the differe
 | -------- | ----------- | -------- |
 | **Location** | A specific point on a geographical plane, represented by coordinates that indicates where something / someone is located. | Position |
 | **Address**  | A human-readable description of a location, usually including the street name, the city, the country, and the postal code along with the related location. | |
+| **ETA** | Estimated Time of Arrival, the time at which a user is expected to reach a certain destination. | |
 | **Route**    | A set of positions that can be interpolated forming a path between two geographical positions. | Path |
 | **Tracking** | Represent the user route information at a certain point in time. | |
 | **State**    | State of a user at a certain time, the values that it could assume are: online, offline, SOS, Routing, Warning. | |

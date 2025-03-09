@@ -30,8 +30,12 @@ Finally, **read models**, or whatever information the system needs to show the u
 
 <div style="width: 100%%; overflow-x: auto; white-space: nowrap;">
     <img 
-        src="https://raw.githubusercontent.com/position-pal/Documentation/ebc2539a7e0359566c4df6faeb3fe2b2f7f0b984/assets/images/event-storming.svg" 
+        src="https://raw.githubusercontent.com/position-pal/Documentation/804a8f49452886b9cec67bff37d6ebd9a3fe2cf7/assets/images/event-storming.svg" 
         alt="Event Storming session" 
         style="display: inline-block; max-width: 5000px; max-height: 800px; width: auto; height: auto;"
     />
 </div>
+
+As a result of the event storming session, the main core entities and aggregates of the system were identified and from those the bounded contexts were derived:
+
+![Bounded Contexts](/images/bounded-contexts.svg)
