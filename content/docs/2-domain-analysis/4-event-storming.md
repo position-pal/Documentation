@@ -18,8 +18,6 @@ Finally, **read models**, or whatever information the system needs to show the u
 
 **Glossary**:
 
-{{< table >}}
-
 | Sticky note color | Concept | Description |
 | ----------------- | ------- | ----------- |
 | 🟨 | **Actor** | Person/user/personas. The actor who triggered the event / comamnd. |
@@ -29,8 +27,6 @@ Finally, **read models**, or whatever information the system needs to show the u
 | 🟩 | **Read Model** | Information that the system needs to show the user. View details. |
 | 🏻 | **System** | An internal or external component of the application. | 
 | 🟥 | **Hotspot** | An internal system constraint / some important note. |
-
-{{< /table >}}
 
 <div style="width: 100%%; overflow-x: auto; white-space: nowrap;">
     <img 
