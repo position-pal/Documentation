@@ -16,10 +16,26 @@ These are arranged in temporal sequence so as to create a timeline representing 
 This is followed by the identification of **commands**, i.e., actions that can be performed on the system by an actor, and **policies** by which the system reacts, going on to enrich the timeline by following the flow of events and actions.
 Finally, **read models**, or whatever information the system needs to show the user, are highlighted.
 
+**Glossary**:
+
+{{ <table >}}
+
+| Sticky note color | Concept | Description |
+| ----------------- | ------- | ----------- |
+| 🟨 | **Actor** | Person/user/personas. The actor who triggered the event / comamnd. |
+| 🟧 | **Domain Event** | An event that is interesting for the business. |
+| 🟦 | **Command** | An action that can be performed on the system. |
+| 🟪 | **Policy** | Capture reactive logic to events. |
+| 🟩 | **Read Model** | Information that the system needs to show the user. View details. |
+| 🏻 | **System** | An internal or external component of the application. | 
+| 🟥 | **Hotspot** | An internal system constraint / some important note. |
+
+{{ </table >}}
+
 <div style="width: 100%%; overflow-x: auto; white-space: nowrap;">
     <img 
         src="https://raw.githubusercontent.com/position-pal/Documentation/ebc2539a7e0359566c4df6faeb3fe2b2f7f0b984/assets/images/event-storming.svg" 
         alt="Event Storming session" 
-        style="display: inline-block; max-width: none;"
+        style="display: inline-block; max-width: 5000px; max-height: 800px; width: auto; height: auto;"
     />
 </div>
