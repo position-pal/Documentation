@@ -6,11 +6,10 @@ draft: false
 toc: false
 ---
 
-The location service is responsible for the **real-time location _tracking_** and **management** of the **_users tracking information_**.
+<!--This chapter explains the strategies used to meet the requirements identified in the analysis.-->
 
-This chapter explains the strategies used to meet the requirements identified in the analysis.
-
-The design is based on the **Domain-Driven Design** principles, focusing on the _structure_, _behavior_, and _interaction_ of the system.
+In this chapter, we present the abstract design of the **Location Service**.
+As per best practices, the design is based on the **Domain-Driven Design** principles, and is presented in terms of the main three views: **structure**, **interaction**, and **behavior**.
 
 ## Abstract Design
 
@@ -33,11 +32,6 @@ package domain {
         + group: GroupId
     }
 
-    interface Scope {
-        + user: User
-        + group: GroupId
-    }
-
     UserId "1" <--* Scope
     GroupId "1" <--* Scope
 
@@ -45,6 +39,13 @@ package domain {
         + latitude: Double
         + longitude: Double
     }
+
+    interface Address {
+        + name: String
+        + position: GPSLocation
+    }
+
+    Address *-left-> "1" GPSLocation
 
     '------------------------- Events -------------------------'
     interface DomainEvent {
@@ -179,7 +180,7 @@ package domain {
     - **`InternalDrivingEvent`**: A specialized `DrivingEvent` _interface_ representing the events that are triggered by the system, such as the user going offline, triggering a stuck alert, or a timeout alert.
   - **`DrivenEvent`**: An _interface_ representing the base structure of a driven event, i.e. an event triggered by the system as a result of some system state change / action.
 
-The application services interfaces are presented in the following diagram, which presents only the main interfaces, leaving out the implementation classes.
+The application services and repositories are presented in the following diagram, which presents only the main interfaces, leaving out the implementation and the adapters classes.
 
 ```plantuml
 @startuml location-service-infrastructure
@@ -191,7 +192,7 @@ package application {
             + membersOf(group: GroupId): Set[UserId]
         }
         interface UserGroupsWriter {
-            + addMemberk(groupId: GroupId, userId: UserId)
+            + addMember(groupId: GroupId, user: User)
             + removeMember(groupId: GroupId, userId: UserId)
         }
         interface UserGroupsStore <<repository>> <<out port>> extends UserGroupsReader, UserGroupsWriter 
@@ -201,8 +202,11 @@ package application {
             + removeMember(event: RemovedMemberFromGroup)
             + groupsOf(userId: UserId): Set[GroupId]
             + membersOf(groupId: GroupId): Set[UserId]
+            + of(scope: Scope): Option[User]
         }
-        class UserGroupsServiceImpl implements UserGroupsService
+        class UserGroupsServiceImpl implements UserGroupsService {
+            - userGroupsStore: UserGroupsStore
+        }
         UserGroupsServiceImpl *--> UserGroupsStore
     }
 
@@ -233,7 +237,9 @@ package application {
             + ofGroup(groupId: GroupId): Stream[Session]
         }
 
-        class UsersSessionServiceImpl implements UsersSessionService
+        class UsersSessionServiceImpl implements UsersSessionService {
+            - userSessionStore: UserSessionStore
+        }
         UsersSessionServiceImpl *-left-> UserSessionStore
         UsersSessionServiceImpl *---> UserGroupsService
     }
@@ -251,12 +257,15 @@ package application {
 
         interface RealTimeTracking <<service>> <<in port>> {
             + handle(event: ClientDrivingEvent)
-            + addObserver(observer: OutcomeObserver)
-            + removeObserver(observer: OutcomeObserver)
+            + addObserverFor(scope: Scope)(observer: OutcomeObserver)
+            + removeObserverFor(scope: Scope)(observer: OutcomeObserver)
         }
         RealTimeTracking *--> OutcomeObserver
 
-        abstract class RealTimeTracker implements RealTimeTracking 
+        abstract class RealTimeTracker implements RealTimeTracking {
+            # maps: MapsService
+            # notifier: NotificationService
+        }
         RealTimeTracker *--> MapsService
         RealTimeTracker *---> NotificationService
     }
@@ -265,11 +274,82 @@ package application {
 @enduml
 ```
 
-### Behavior
+- `MapsService`: the service responsible for calculating the distance and the duration between two geographical positions, based on the mode of transportation.
+- `NotificationService`: the service responsible for sending notifications, acting as a _proxy_ towards the notification service. The concrete adapter is in charge of sending the notification to the appropriate channel of the message broker.
+- `RealTimeTracking`: the service responsible for handling the driving events, acting as an input port for the external adapters. It allows to register observers to be get back real-time updates.
+- Clients can in any moment get a snapshot of the user's state and location by querying the `UsersSessionService` service, which is responsible for managing the user's session state.
+  - The actual tracking information are stored through the `UserSessionStore` repository, which is responsible for the persistence of the user's session state. A `UserSessionStore` is both a `Writer` and a `Reader` for the `Session` entity. Separate write-side and read-side interfaces are defined to ensure the separation of concerns and the single responsibility principle, leaving the implementation open to adhere to CQRS pattern.
+- `UserGroupsService` is responsible for managing the saving and retrieval of the groups members through the `UserGroupsStore` repository. Updates happen thanks the events propagated by the User service.
 
-<!--
-The active controller of the system is based on top of Akka actors which allows for a scalable and fault-tolerant system without arranging a complex infrastructure for it.
--->
+### Interaction
+
+The interaction between the main components of the system is described in the following sequence diagram.
+
+The Group Member connects to the `RealTimeTracking` service through a `Real Time Communication Connector` starting observing the updates of the group members it belongs to.
+However, before starting reacting to these updates, it fetches the current state of all group members through the `UsersSessionService` service, ensuring a consistent view of their state.
+Once the current state of all members is obtained, it starts reacting to the updates of other groups members while sending its own updates to the service.
+The `RealTimeTracking` service, upon receiving the updates, reacts to the events and updates the user's session state, sending back the result to all the group members currently observing group's changes.
+
+Please, note the diagram illustrates only the main success flow, leaving out the error handling and the edge cases.
+
+```plantuml
+@startuml location-service-interaction
+autonumber
+
+actor "Group Member" as User
+control "Real Time \n Communication Connector" as RTC
+participant UsersSessionService as USS
+participant RealTimeTracking as RTT
+database UserSessionStore as USSS
+
+== Use case: Real-time tracking ==
+
+activate User
+
+User -> RTC: connect(<groupId, userId>)
+activate RTC
+RTC -> RTT: addObserverFor(<groupId, userId>)(me)
+activate RTT
+RTT -> RTT: save(observer)
+RTT --> RTC: ok
+deactivate RTT
+RTC --> User: ok
+
+User -> USS: ofGroup(groupId)
+activate USS
+loop#Lightblue for each group member
+    USS -> USSS: sessionOf(<scope>)
+    activate USSS
+    USSS --> USS: Some[Session]
+    deactivate USSS
+end
+USS --> User: Stream[Session]
+deactivate USS
+
+loop#gold while connected, periodically
+    User ->> RTC: send(ClientDrivingEvent)
+    RTC -> RTT: handle(ClientDrivingEvent)
+    activate RTT
+    RTT -->> RTC: ack
+    RTC -->> User: ack
+    RTT -> RTT: react(event): UserUpdate
+    RTT -> USSS: update(UserUpdate)
+    activate USSS
+    USSS --> RTT: ok
+    deactivate USSS
+    loop#Lightblue for each observer
+        RTT --> RTC: notify(UserUpdate)
+        RTC --> User: UserUpdate
+    end
+end
+
+deactivate RTC
+deactivate User
+
+@enduml
+```
+
+### Behavior
 
 As an event driven architecture, the state of each group's member can be described by the following state diagram, drawing the possible state transitions that can be fired by one of the above `DrivingEvent`.
 
@@ -310,62 +390,3 @@ SOSMode --> NormalMode : ""SOSAlertStopped""
 
 @enduml
 ```
-
-<!--
-
-### Interaction
-
-```plantuml
-@startuml location-service-interaction
-
-actor   "Client"                            as client
-queue   "RabbitMQ \n Notification Exchange" as rabbitmq_notifications
-queue   "Kafka \n Broker"                   as kafka_broker
-
-@enduml
-```
-
--->
-
-<!--
-### Architectural Design
-
-The project is structured by implementing hexagonal architecture, mapping layers to Gradle submodules.
-
-```plantuml
-@startuml repo-structure
-
-skinparam component {
-    BackgroundColor<<external>> White
-    BackgroundColor<<executable>> #ccffcc
-    BackgroundColor<<test>> cyan
-}
-skinparam DatabaseBackgroundColor LightYellow
-skinparam NodeBackgroundColor White
-
-component ":location-service" {
-    [:commons] as C
-    [:domain] as D
-    [:application] as A
-
-    [:presentation] as P
-    [io.circe:circe-core_3] as circe <<external>>
-    [io.grpc-*] as grpc <<external>>
-
-    [:infrastructure] as I
-    [org.http4s:http4s-*] as http4s <<external>>
-    [com.typesafe.akka:akka-cluster-*] as akka <<external>>
-
-    D -up-|> C
-    A -up-|> D
-    P -up-|> A
-    circe <|-left- P
-    grpc <|-right- P
-    I -up-|> P
-    http4s <|- I
-    I -|> akka
-}
-
-@enduml
-```
--->

@@ -36,6 +36,8 @@ Finally, **read models**, or whatever information the system needs to show the u
     />
 </div>
 
-As a result of the event storming session, the main core entities and aggregates of the system were identified and from those the bounded contexts were derived:
+<br>
+
+As a result of the event storming session, the main core entities and aggregates of the system were identified and from those the **bounded contexts** were derived:
 
 ![Bounded Contexts](/images/bounded-contexts.svg)

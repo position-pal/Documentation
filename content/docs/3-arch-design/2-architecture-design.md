@@ -142,7 +142,6 @@ Each layer of the Hexagonal Architecture has been enforced in the code by mappin
 
 ```plantuml
 @startuml hexagonal-architecture
-
 skinparam artifact {
     BackgroundColor<<third-party>> white
 }
