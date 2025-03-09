@@ -1,5 +1,7 @@
 {
     "files.watcherExclude": {
         "**/target": true
-    }
+    },
+    "plantuml.render": "Local",
+    "plantuml.server": "https://www.plantuml.com/plantuml"
 }
