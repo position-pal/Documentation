@@ -199,3 +199,5 @@ Moreover, when a user leaves a group, the service needs to be notified to stop t
 The Location Service API is documented using the **AsyncAPI specification**, which provides a standardized format for defining and describing asynchronous APIs. By leveraging _AsyncAPI_, the Location Service API ensures clear communication patterns, message structures, and data formats
 
 <iframe src="https://position-pal.github.io/location-service/asyncapi/" width="100%" height="700"></iframe>
+
+[Ref: [Location Service AsyncAPI](https://position-pal.github.io/location-service/asyncapi/)].

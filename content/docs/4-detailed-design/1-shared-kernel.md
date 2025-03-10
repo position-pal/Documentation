@@ -114,4 +114,3 @@ package domain {
   - `GroupWisePushNotification` - a command that sends a push notification to all members of a specific group.
   - `CoMembersPushNotification` - a command that sends a push notification to all users sharing a group with a specific user.
 - Both commands and events rely on shared value objects and entities that represent the core concepts of the system, such as `UserId`, `GroupId`, `User`, and `NotificationMessage`. _**It is important to note that these entities contain only the attributes required to fulfill integration needs**. More complex design details are delegated to individual services, which are responsible for managing their own data and requirements and are free to evolve independently of other services._
-

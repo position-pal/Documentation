@@ -5,9 +5,10 @@ description: ""
 toc: true
 ---
 
-The chosen architectural style for the system is the **Microservices Architecture**.
-
-`TODO: why, advantages`
+Following the identification and definition of the quality attributes, a _**microservice architecture**_ was chosen.
+This is characterized by the decomposition of the system into a set of independent, and loosely coupled services, each of which is responsible for a specific business domain or functionality.
+Indeed, the use of this architectural style enables the continuous delivery and deployment of large, complex applications, the ability to scale horizontally with ease, the possibility to use different technologies and programming languages for each service and an increase in the overall system's maintainability.
+Moreover it allows to isolate failures and to improve the fault tolerance of the system, hence gaining in reliability.
 
 ## Microservices Decomposition
 
@@ -18,8 +19,11 @@ Following the _decompose by subdomain strategy_ the following microservices have
 - **Notification Service**: responsible for managing the notifications;
 - **Chat Service**: responsible for managing the chat messages.
 
-It should be noted that in the _User Service_ we have joined together the Users and Groups bounded context.
-This is because one can see the close interaction between these two domain entities in addition to respecting properties such as the "Common Closure Principle" (package components that change for the same reason are located into the same service), ensuring data consistency and mitigate Network latency:
+Both the Groups and User bounded contexts have been consolidated within the user service due to their strong interrelation and need for frequent, seamless interaction.
+Separating them into distinct microservices would compromise data consistency and introduce unacceptable levels of latency, making this integration a more efficient and reliable solution.
+Indeed, while it's common to map a bounded context to a single microservice, this isn't always the case [^1].
+
+[^1]: [How to define subdomains](https://microservices.io/post/architecture/2023/08/14/assemblage-overview-part-2-defining-subdomains.html#a-microservice-is-a-collection-of-subdomains)
 
 Moreover, to aggregate the functionalities of the different microservices, we have chosen to use the **API Gateway** pattern. This pattern is used to aggregate the functionalities of the architecture, providing a single entry point for the client applications.
 The API Gateway is responsible for routing the requests to the appropriate service, aggregating the responses, and providing a unified interface to the client applications.
@@ -50,8 +54,6 @@ In order to avoid overwhelming the reader with an all-encompassing but rather co
 
 #### Location Service
 
-
-
 ```plantuml
 @startuml arch-cc-location
 '========================== Styling =========================='
@@ -76,7 +78,7 @@ component ":Location Service" {
     portout "Publish \n notifications" as LOC_PUB
     portout "Receive \n groups events" as LOC_SUB
 }
-GATEWAY_LOC_REALTIME -(0- LOC_REALTIME : <<wss>>
+GATEWAY_LOC_REALTIME --(0- LOC_REALTIME : <<real-time connector>>
 GATEWAY_LOC_API -(0- LOC_TRACK : <<rpc>>
 database ":Location \n Database" as LOC_DB <<infrastructure>> {
     portin " " as LOC_DB_DA
