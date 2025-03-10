@@ -10,10 +10,10 @@ Chat service is responsible for managing the **communication between users in _r
 
 ## Abstract Design
 
-Here are presented the main components of the chat service, we start describing the foundamental entities of the domain, then we move to the infrastructure layer, where we define the commands and events that will be used to interact with the domain entities. 
-
+Here are presented the main components of the chat service, we start describing the foundamental entities of the domain, then we move to the infrastructure layer, where we define the commands and events that will be used to interact with the domain entities.
 
 ### Structure
+
 ```plantuml
 @startuml chat-service-structure-domain
 hide empty members
@@ -75,6 +75,7 @@ package domain {
     GroupID .up. shared.kernel.domain.GroupId
     
 }
+@enduml
 ```
 
 - **Client**: An entity that represents a user connected to the chat service. It has an identifier, a status, and a reference to the output channel.
@@ -172,6 +173,7 @@ package amqp {
     MessageConsumer *-down-> MessageHandler
     MessageConsumer *-up-> "1" GroupHandlerServiceImpl
 }   
+@enduml
 ```
 
 ### Interaction between Entities
