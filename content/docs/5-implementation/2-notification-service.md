@@ -1,9 +1,9 @@
 ---
-weight: 502
+weight: 504
 title: "Notification Service implementation details"
 description: ""
 draft: false
-toc: false
+toc: true
 ---
 
 <!--## High level overview and modules structure-->

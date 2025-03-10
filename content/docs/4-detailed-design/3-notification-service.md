@@ -1,15 +1,33 @@
 ---
-weight: 403
+weight: 405
 title: "Notification Service design"
 description: ""
 draft: false
 toc: false
 ---
 
+In this section is presented the abstract design of the notification service.
+
+As already presented, its main responsibility is to **send notifications** to the users, based on the events that occur in the system.
+
 ## Structure
+
+The structure of the service is quite simple:
 
 ```plantuml
 @startuml notification-service-structure
+package shared.kernel.domain {
+    package entities {
+        interface User <<entity>>
+        interface UserId <<value object>>
+        interface GroupId <<value object>>
+        User *-left-> "1" UserId
+        interface NotificationMessage <<entity>> {
+            + title: String
+            + body: String
+        }
+    }
+}
 
 package application {
 
@@ -22,6 +40,7 @@ package application {
             + token: Token
         }
         UserToken *-left-> "1" Token
+        UserToken *-up--> "1" UserId
     }
 
     interface GroupsRepository <<repository>> <<out port>> {
@@ -35,6 +54,8 @@ package application {
         + send(notificationMessage: NotificationMessage): PublishingTargetStrategy
         + send(message: NotificationMessage: userIds: Set<UserId>)
     }
+    NotificationPublisher *-up--> "1" NotificationMessage
+    NotificationPublisher *-up--> "*" UserId
 
     interface PublishingTargetStrategy {
         + toAllMembersOf(groupId: GroupId)
@@ -58,15 +79,24 @@ package application {
         + register(userId: UserId, token: Token): Result<UserToken>
         + invalidate(userId: UserId, token: Token): Result<Unit>
     }
+    UsersTokensService *-up-> "1" UserId
+    UsersTokensService *-up-> "1" GroupId
 
-    UsersTokensRepository *-left--> "1" UserToken
-    UsersTokensService *--> "1" UserToken
-    UsersTokensService *--> "1" Token
+    UsersTokensRepository *-up-> "1" UserToken
+    UsersTokensService *-up-> "1" UserToken
 
     class UsersTokensServiceImpl implements UsersTokensService
     UsersTokensServiceImpl *--> "1" UsersTokensRepository
-    
-
 }
 @enduml
 ```
+
+- `Token` is a value object that represents the token used to identify the device of a user.
+- `UserToken` is an entity that represents the association between a user and a token.
+- `UsersTokensService` is the service that allows registering and invalidating tokens for users. 
+- `UsersTokensRepository` is the repository that stores the associations between users and tokens.
+- `NotificationPublisher` is the service that sends notifications to users.
+  - `PublishingTargetStrategy` is the strategy used to determine the target of the notification. Two stategies exists: one to send to all members of a group (corresponding to the `GroupWisePushNotification` command) and another to send to all members sharing a group with a user (corresponding to the `CoMembersPushNotification` command).
+- `GroupsRepository` is the repository that allows storing and retrieving the members of the groups. This is called by the message broker adapter on every events whose topic is related to groups state changes.
+
+## Interaction

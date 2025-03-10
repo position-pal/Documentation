@@ -8,7 +8,7 @@ toc: false
 
 <!--This chapter explains the strategies used to meet the requirements identified in the analysis.-->
 
-In this chapter, we present the abstract design of the **Location Service**.
+In this section it is presented the abstract design of the **Location Service**.
 As per best practices, the design is based on the **Domain-Driven Design** principles, and is presented in terms of the main three views: **structure**, **interaction**, and **behavior**.
 
 ## Abstract Design

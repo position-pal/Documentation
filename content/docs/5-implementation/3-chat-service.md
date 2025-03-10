@@ -1,5 +1,5 @@
 ---
-weight: 503
+weight: 502
 title: "Chat Service implementation details"
 description: ""
 draft: false
