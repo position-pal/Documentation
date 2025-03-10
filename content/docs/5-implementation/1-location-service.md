@@ -51,31 +51,38 @@ flowchart LR
 3. **Stationary check**: this step checks if the user is in routing mode and has become stuck in a specific location.
 4. **Arrival timeout check**: this step checks if the user is in routing mode and has not arrived at the expected destination within the expected time.
 
-For example, the following snippet shows the reaction 
+For example, the following snippet shows the reaction _Arrival check_ reaction implementation:
 
 ```scala
+/** A [[TrackingEventReaction]] checking if the position curried by the event
+  * is near the arrival position. 
+  */
 object ArrivalCheck:
 
-  def apply[F[_]: Async](using MapsService[F], NotificationService[F], UserGroupsService[F]): EventReaction[F] =
+  def apply[F[_]: Async](
+    using maps: MapsService[F], notifier: NotificationService[F], groups: UserGroupsService[F],
+  ): EventReaction[F] =
     on[F]: (session, event) =>
       event match
         case e: SampledLocation if session.tracking.exists(_.isMonitorable) =>
           for
             config <- ReactionsConfiguration.get
             tracking <- session.tracking.asMonitorable.get.pure[F]
-            distance <- summon[MapsService[F]].distance(tracking.mode)(e.position, tracking.destination.position)
-            isWithinProximity = distance.toMeters.value <= config.proximityToleranceMeters.meters.value
-            _ <- if isWithinProximity then sendNotification(session.scope, successMessage) else Async[F].unit
-          yield if isWithinProximity then Left(RoutingStopped(e.timestamp, e.user, e.group)) else Right(Continue)
+            distance <- maps.distance(tracking.mode)(e.position, tracking.destination.position)
+            isNear = distance.toMeters.value <= config.proximityToleranceMeters.meters.value
+            _ <- if isNear then sendNotification(session.scope, successMessage) else Async[F].unit
+          yield if isNear then Left(RoutingStopped(e.timestamp, e.scope)) else Right(Continue)
         case _ => Right(Continue).pure[F]
+
+  private val successMessage = notification(" arrived!", " has reached their destination on time.")
 ```
 
 They can be composed in a pipeline as follows:
 
 ```scala
-  val reaction = (
+  val reactionPipeline = (
     PreCheckNotifier[IO] >>> ArrivalCheck[IO] >>> StationaryCheck[IO] >>> ArrivalTimeoutCheck[IO]
-  )(s, e)
+  )(session, event)
 ```
 
 ### Akka Cluster to the rescue
@@ -84,9 +91,10 @@ Since the service should track a large number of users and their tracking inform
 
 In particular, the Location Service is implemented using the [Akka Cluster Sharding](https://doc.akka.io/docs/akka/current/typed/cluster-sharding.html) module, which allows to **distribute stateful actors** across the cluster nodes in a **location-transparent** way.
 This means that the service can scale horizontally by adding more nodes to the cluster and the actors will be **automatically distributed** and, possibly, **rebalanced** across the nodes without any kind of intervention **from the underlying infrastructure**.
-Moreover, the interaction between the actors is guided by their only _logical_ identifier despite their physical location.
+This is possible thanks to the fact the interaction between the actors is guided by their only _logical_ identifier despite their physical location.
+Moreover, _Cluster Sharding_ entities have a configurable _passivation_ mechanism that allows to automatically stop the actors that are not used for a certain amount of time, thus freeing the resources and ensuring the system's efficiency.
 
-Moreover, the Akka framework support the integration of websockets through the [Akka HTTP](https://doc.akka.io/docs/akka-http/current/index.html) module, which allows to easily expose the WebSocket endpoints to the clients and to manage the connections and their handlers through actors distributed across the cluster, zeroing the need for additional infrastructure components to deal with scaling and fault-tolerance.
+Additionally, the Akka framework support the integration of websockets through the [Akka HTTP](https://doc.akka.io/docs/akka-http/current/index.html) module, which allows to easily expose the WebSocket endpoints to the clients and to manage the connections and their handlers through actors distributed across the cluster, zeroing the need for additional infrastructure components to deal with scaling and fault-tolerance.
 
 For our purposes two main actor entities have been designed:
 
@@ -106,3 +114,88 @@ The main flow is described in the following diagram:
 It is worth noting both the actors are sharded across the cluster nodes and, hence, it is not known in advance where they are located, but since the interaction is guided by their logical identifier, the system is able to route the messages to the correct actor even though they are located on different nodes from the one the client is connected to.
 
 ![Akka Cluster Sharding](/images/ls-sharding.svg)
+
+When using sharding, actors entities can be moved across the cluster nodes and, since they are stateful, a persistence mechanism must be in place to ensure the state is fully recovered when the actor is moved to a different node.
+Akka follows the ***Event Sourcing*** pattern: only the _events_ that are persisted by the actor are stored in the journal of events (the actor when receiving an event can choose whether persisting or ignoring it).
+Upon recovery, the actor automatically replays the events, rebuilding its state from scratch.
+This can be either the full history or starting from a checkpoint in a snapshot, that can significantly reduce the recovery time.
+This approach allows very high transaction rates and efficient replication.
+
+```scala
+/** The actor in charge of tracking the real-time location of users, reacting to
+  * their movements and status changes. This actor is managed by Akka Cluster Sharding.
+  */
+object RealTimeUserTracker:
+
+  /** Uniquely identifies the types of this entity instances (actors) 
+    * that will be managed by cluster sharding. */
+  val key: EntityTypeKey[Command] = EntityTypeKey(getClass.getSimpleName)
+
+  /** Labels used to tag the events emitted by this kind entity actors to distribute them over
+    * several projections. Each entity instance selects it (based on an appropriate strategy) 
+    * and uses it to tag the events it emits.
+    */
+  val tags: Seq[String] = Vector.tabulate(5)(i => s"${getClass.getSimpleName}-$i")
+
+  def apply(scope: Scope, tag: String)(
+    using NotificationService[IO], MapsService[IO], UserGroupsService[IO],
+  ): Behavior[Command] =
+    Behaviors.setup: ctx =>
+      given ActorContext[Command] = ctx
+      Behaviors.withTimers: timer =>
+        val persistenceId = PersistenceId(key.name, scope.encode)
+        // Create the Event Sourced Behavior with initial state an empty session
+        EventSourcedBehavior(persistenceId, Session.of(scope), commandHandler(timer), eventHandler)
+          .withTagger(_ => Set(tag))
+          .snapshotWhen((_, event, _) => event == RoutingStopped, deleteEventsOnSnapshot = true)
+          .withRetention: // to free up space in the journal
+            snapshotEvery(numberOfEvents = 100, keepNSnapshots = 1).withDeleteEventsOnSnapshot
+          .onPersistFailure: // to handle persistence failures
+            restartWithBackoff(minBackoff = 2.second, maxBackoff = 15.seconds, randomFactor = 0.2))
+  
+  // The event handler is responsible for updating the state of the entity
+  private def eventHandler: (Session, Event) => Session = ...
+
+  // The command handler is responsible for handling the incoming commands
+  // triggering the appropriate responses and possibly persisting new events
+  private def commandHandler(
+    timerScheduler: TimerScheduler[Command]
+  ): (Session, Command) => Effect[Event, Session] = ...
+```
+
+As you can see the `RealTimeUserTracker` is implemented as an `EventSourceBehavior` whose initial state is an empty `Session`.
+Indeed, the Akka Sharding entities are very often carrier actors for the _domain aggregates_.
+
+Finally, to complete the picture, [**Akka Projection**](https://doc.akka.io/libraries/akka-projection/current/overview.html) is used to project the events emitted by the `RealTimeUserTracker` actors to the read-side representation of the user state and tracking information, which is then used by the other services to provide the user with the most up-to-date information.
+This approach follows the **CQRS** pattern and allows to separate the read and write concerns, ensuring the system's scalability and performance.
+
+![Akka Projection](/images/ls-projection.svg)
+
+As data storage component, **Cassandra** has been chosen for its scalability and performance characteristics, which are well suited for the high volume of data that needs to be stored and queried.
+
+## Location Service API
+
+To allow users to get the most up-to-date information about the state and tracking information of the users, the Location Service expose a set of gRPC APIs that allow to query them from the Read-Side representation obtained through the Akka Projection described above.
+
+Here the service definition:
+
+```protobuf
+service UserSessionsService {
+  rpc GetCurrentSession(GroupId) returns (stream SessionResponse) { }
+  rpc GetCurrentLocation(Scope) returns (LocationResponse) { }
+  rpc GetCurrentState(Scope) returns (UserStateResponse) { }
+  rpc GetCurrentTracking(Scope) returns (TrackingResponse) { }
+}
+```
+
+As you can see, we take full advantage of the gRPC streaming capabilities to allow the clients to get the most up-to-date information through a lazy stream of responses.
+This is important because the response can become quickly huge and returning it in a single response can be very inefficient and slow.
+
+One important aspect to remark and that justify the need for this service to receive groups updates through the message broker is that the service needs to know the members of the groups to provide the correct information to the clients.
+Moreover, when a user leaves a group, the service needs to be notified to stop tracking the user.
+
+## Async API Documentation
+
+The Location Service API is documented using the **AsyncAPI specification**, which provides a standardized format for defining and describing asynchronous APIs. By leveraging _AsyncAPI_, the Location Service API ensures clear communication patterns, message structures, and data formats
+
+<iframe src="https://position-pal.github.io/location-service/asyncapi/" width="100%" height="700"></iframe>

@@ -2,6 +2,10 @@
     "files.watcherExclude": {
         "**/target": true
     },
+    "[markdown]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2
+    },
     "plantuml.render": "Local",
     "plantuml.server": "https://www.plantuml.com/plantuml"
 }

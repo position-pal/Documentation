@@ -3,7 +3,7 @@ weight: 502
 title: "Notification Service implementation details"
 description: ""
 draft: false
-toc: true
+toc: false
 ---
 
 ## High level overview and modules structure
