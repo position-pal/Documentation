@@ -362,7 +362,7 @@ state NormalMode {
     [*] --> Active
     Active --> Active : ""SampledLocation""
 
-    Active -left-> Inactive : ""WentOffline"" / trigger notification
+    Active -left-> Inactive : ""WentOffline""
     Inactive -right-> Active : ""SampledLocation""
 
     Routing : entry [first time] / trigger notification
