@@ -6,7 +6,7 @@ draft: false
 toc: false
 ---
 
-## High level overview and modules structure
+<!--## High level overview and modules structure-->
 
 Currently, the only supported notification types are **push notifications**, which are essential to guarantee that the client is immediately informed about groups changes or user state changes, like the trigger of the SOS alert or the journey start.
 
@@ -74,13 +74,12 @@ component ":notification-service" {
 
 -->
 
-## Message broker (`:mom`)
+## Message broker
 
-Like already presented in the [Architecture]() section, the notification service is integrated with the message broker to receive notification commands from other microservices.
+Like already presented in the [Architecture Design](/docs/3-arch-design/2-architecture-design/) section, the notification service is integrated with the message broker to receive notification commands from other microservices.
 
 
-
-## Push Notifications (`:fcm`)
+## Push Notifications
 
 The microservice is integrated with **Firebase Cloud Messaging (FCM)** to send push notifications to the client application. 
 
@@ -203,7 +202,7 @@ class Firebase private constructor(private val app: FirebaseMessaging) {
 }
 ```
 
-### API (`:grpc`)
+### API
 
 The client can register the device token obtained from FCM to the notification service through a gRPC API, whose protobuf definition is as follows:
 
