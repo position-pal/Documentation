@@ -29,14 +29,35 @@ Based on the above non-functional requirements, the team has identified the foll
 ## Quality Attributes Scenarios
 
 ### Runtime
+#### Security
+- **Stimulus**: An unauthorized access attempt is made to access sensitive data in the system.
+- **Stimulus Source**: A malicious actor attempting to exploit potential vulnerabilities.
+- **Environment**: The system operating in normal state in a production environment.
+- **Artifact**: Authentication and authorization components.
+- **Response**: The system blocks the access.
+- **Response Measure**:
+  - ✅ Pass Condition: The system prevents 100% of unauthorized access attempts.
+  - ✅ Pass Condition: The system adheres to data privacy regulations by properly encrypting sensitive data at rest and in transit.
 
-Vale--
+#### Performance
+- **Stimulus**: A user performs a data-intensive operation on the system.
+- **Stimulus Source**: User interacting with the system interface.
+- **Environment**: The system operating under normal load in a production environment.
+- **Artifact**: The specific service processing the request.
+- **Response**: The system processes the request and returns the results efficiently.
+- **Response Measure**:
+  - ✅ Pass Condition: 95 % of requests are under 1000ms and that 99% of requests are under 1500ms and the rate of requests failing is less than 0.05.
+  - ✅ Pass Condition: Resource utilization (CPU, memory) remains below 80% during peak load periods.
 
-Security
-
-Performance
-
-User friendliness
+#### User friendliness
+- **Stimulus**: A new user attempts to complete a core workflow in the system for the first time.
+- **Stimulus Source**: First-time user.
+- **Environment**: Production environment with final UI implementation.
+- **Artifact**: Client application user interface.
+- **Response**: The user is able to complete the workflow without external assistance.
+- **Response Measure**:
+  - ✅ Pass Condition: 85% of new users complete core workflows successfully on first attempt without requiring help documentation.
+  - ✅ Pass Condition: UI responds to user interactions within 300ms to maintain the perception of immediate feedback.
 
 #### Observability
 **Stimulus**: On or more services in the system is not responding as expected.
