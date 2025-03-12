@@ -31,7 +31,27 @@ In this section are collected the **functional requirements** of the system in t
 
 </em>
 
-`TODO: missing groups`
+### Group Management
+
+<em>
+
+1. As a registered user \
+   I want to create a new group by specifying the name \
+   So that I can later go and interact with it
+2. As a group member \
+   I want to add one or more users to this existing group \
+   So they can be displayed in the member list
+3. As a group member \
+   I want to remove one or more users from this existing group \
+   So they can no longer be displayed in the member list
+4. As a group member \
+   I want to leave the group \
+   So I can no longer be displayed in the member list
+5. As a group member \
+   I want to update the group name \
+   So I can change it
+
+</em>
 
 ### Location tracking
 
