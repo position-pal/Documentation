@@ -11,6 +11,180 @@ toc: false
 
 ## Use cases
 
+### Users and Groups Management
+
+```plantuml
+@startuml users-use-cases
+left to right direction
+
+actor "Authenticated User" as AuthUser
+
+rectangle "Users sub-system" {
+    usecase "Register with the system" as UC1
+    usecase "Log in with my credentials" as UC2
+    usecase "Update my profile information" as UC3
+    usecase "Log out" as UC4
+}
+
+rectangle "Group sub-system" {
+    usecase "Create a new group" as UC5
+    usecase "Add one user to a group" as UC6
+    usecase "Remove one user from a group" as UC7
+    usecase "Leave a group" as UC8
+    usecase "Update the group name" as UC9
+}
+
+User --> UC1
+User --> UC2
+AuthUser --> UC3
+AuthUser --> UC4
+
+
+AuthUser --> UC5
+AuthUser --> UC6
+AuthUser --> UC7
+AuthUser --> UC8
+AuthUser --> UC9
+
+@enduml
+
+```
+
+### User Management Use Cases
+
+1. **Register with the system**
+
+   - **Actor**: User
+   - **Description**: A new user creates an account in the system.
+   - **Preconditions**:
+     - The user has not previously registered with the system.
+   - **Main Scenario**:
+     1. The user provides required registration information (name, surname, email and password);
+     2. The system validates the provided information;
+     3. The system creates a new user account;
+   - **Alternative Scenario**: Registration information is invalid
+     1. The system notifies the user about validation errors;
+     2. The user corrects the information and resubmits.
+   - **Postcondition**: The user has a registered account in the system.
+
+2. **Log in with my credentials**
+
+   - **Actor**: User
+   - **Description**: A registered user authenticates to access the system.
+   - **Preconditions**:
+     - The user has a registered account in the system.
+   - **Main Scenario**:
+     1. The user enters their credentials (email and password);
+     2. The system validates the credentials;
+     3. The system grants access to the user and creates an authenticated session.
+   - **Alternative Scenario**: Invalid credentials
+     1. The system notifies the user that the credentials are incorrect;
+     2. The user re-enters the correct credentials.
+   - **Postcondition**: The user is authenticated and can access restricted functionalities.
+
+3. **Update my profile information**
+
+   - **Actor**: Authenticated User
+   - **Description**: An authenticated user modifies their personal information in the system.
+   - **Preconditions**:
+     - The user is logged in to the system.
+   - **Main Scenario**:
+     1. The user accesses their profile settings;
+     2. The user modifies the desired information (name, surname and password);
+     3. The user confirms the changes;
+     4. The system validates and saves the updated information.
+   - **Alternative Scenario**: Invalid information
+     1. The system notifies the user about validation errors;
+     2. The user corrects the information and resubmits.
+   - **Postcondition**: The user's profile information is updated in the system.
+
+4. **Log out**
+
+   - **Actor**: Authenticated User
+   - **Description**: An authenticated user ends their current session.
+   - **Preconditions**:
+     - The user is logged in to the system.
+   - **Main Scenario**:
+     1. The user selects the logout option;
+     2. The system terminates the user's authenticated session;
+     3. The system redirects the user to the unauthenticated state.
+   - **Postcondition**: The user is no longer authenticated and cannot access restricted functionalities.
+
+### Group Management Use Cases
+
+5. **Create a new group**
+
+   - **Actor**: Authenticated User
+   - **Description**: An authenticated user creates a new group in the system.
+   - **Preconditions**:
+     - The user is logged in to the system.
+   - **Main Scenario**:
+     1. The user selects the option to create a new group;
+     2. The user provides the group name;
+     3. The system creates the new group with the user as the initial member;
+     4. The system confirms the successful creation of the group.
+   - **Postcondition**: A new group exists in the system with the user as a member.
+
+6. **Add one user to a group**
+
+   - **Actor**: Authenticated User
+   - **Description**: An authenticated user adds another user to a group.
+   - **Preconditions**:
+     - The user is logged in to the system;
+     - The user is a member of the group;
+     - The target user exists in the system.
+   - **Main Scenario**:
+     1. The user selects the group they want to add a user to;
+     2. The user enters the email of the user they want to add;
+     3. The user confirms adding the selected user to the group;
+     4. The system adds the selected user as a member of the group;
+     5. The system notifies both users about the addition.
+   - **Alternative Scenario**: The target user is already a member
+     1. The system notifies the user that the target is already a group member.
+   - **Postcondition**: The target user is now a member of the group.
+
+7. **Remove one user from a group**
+
+   - **Actor**: Authenticated User
+   - **Description**: An authenticated user removes another user from a group.
+   - **Preconditions**:
+     - The user is logged in to the system;
+     - The user is a member of the group;
+     - The target user is a member of the group.
+   - **Main Scenario**:
+     1. The user selects the group they want to remove a user from;
+     2. The user selects the group member to remove;
+     3. The user confirms removing the selected user from the group;
+     4. The system removes the selected user's membership from the group;
+   - **Postcondition**: The target user is no longer a member of the group.
+
+8. **Leave a group**
+
+   - **Actor**: Authenticated User
+   - **Description**: An authenticated user leaves a group they belong to.
+   - **Preconditions**:
+     - The user is logged in to the system;
+     - The user is a member of the group.
+   - **Main Scenario**:
+     1. The user selects the group they want to leave;
+     2. The user confirms leaving the group;
+     3. The system removes the user's membership from the group;
+   - **Postcondition**: The user is no longer a member of the group.
+
+9. **Update the group name**
+
+   - **Actor**: Authenticated User
+   - **Description**: An authenticated user changes the name of a group.
+   - **Preconditions**:
+     - The user is logged in to the system;
+     - The user is a member of the group.
+   - **Main Scenario**:
+     1. The user selects the group they want to rename;
+     2. The user enters a new name for the group;
+     3. The user confirms the name change;
+     4. The system updates the group name;
+   - **Postcondition**: The group now has the new name in the system.
+
 ### Location Tracking
 
 ```plantuml
