@@ -21,14 +21,57 @@ Moreover we distinguish between _Commands_ and _Events_ to highlight the differe
 ## Users Management
 
 ### Ubiquitous Language
+{{< table "table-striped " >}}
+
+| Concept  | Description | Synonyms |
+| -------- | ----------- | -------- |
+| **User** | An individual who has registered and can access the system with a unique identity. | Member, Account Holder |
+| **Profile** | Collection of personal information and preferences associated with a user. | User Profile |
+| **Authentication** | The process of verifying a user's identity, typically through credentials like email/password. | Login, Sign-in |
+| **Authorization** | Determination of what actions a user is permitted to perform within the system. | Permissions, Access Control |
+| **Credentials** | Information used to verify a user's identity, such as email/password combinations or tokens. | Login Details |
+| **Session** | A period of time during which a user is actively authenticated in the system. | User Session |
+| **Registration** | The process by which a new user creates an account in the system. | Sign-up, Account Creation |
+
+{{< /table >}}
 
 ### Events
+{{< table "table-striped" >}}
+
+| 🏷️ Event Type | Event Name | Description |
+| ---------- | ---------- | ----------- |
+| **🚀 Driving event** | **UserRegistered** | Triggered when a new user successfully completes the registration process. |
+| | **UserAuthenticated** | Triggered when a user successfully logs into the system. |
+| | **UserLoggedOut** | Triggered when a user explicitly logs out of the system. |
+| | **ProfileUpdated** | Triggered when a user modifies their profile information. |
+| | **PasswordChanged** | Triggered when a user changes their password. |
+| **📥 Driven event** | **UserCreated** | Notification that a new user account has been created in the system. |
+| | **AuthenticationFailed** | Notification of a failed authentication attempt. |
+| | **UserDeleted** | Notification that a user account has been permanently deleted from the system. |
+
+{{< /table >}}
 
 ## Groups Management
 
 ### Ubiquitous Language
+{{< table "table-striped " >}}
+
+| Concept  | Description | Synonyms |
+| -------- | ----------- | -------- |
+| **Group** | A collection of users who are connected for shared tracking and communication purposes. | Circle, Team |
+| **Group Member** | A user who belongs to a group. | Participant |
+
+{{< /table >}}
 
 ### Events
+{{< table "table-striped" >}}
+
+| 🏷️ Event Type | Event Name | Description |
+| ---------- | ---------- | ----------- |
+| **🚀 Driving event** | **GroupCreated** | Triggered when a user creates a new group. |
+| **📥 Driven event** | **GroupMemberAdded** | Triggered when a user is added to an existing group. |
+| | **GroupMemberRemoved** | Triggered when a member is removed from a group. |
+{{< /table >}}
 
 ## Location Tracking
 
