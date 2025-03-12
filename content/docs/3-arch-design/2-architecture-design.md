@@ -52,6 +52,42 @@ The following diagrams shows the _Component and Connector_ (C&C) view of the sys
 
 In order to avoid overwhelming the reader with an all-encompassing but rather confusing scheme, we provide below a C&C view of the system by providing, for each microservice, its relative UML diagram.
 
+#### User and Group Service
+
+```plantuml
+@startuml arch-cc-location
+'========================== Styling =========================='
+skinparam component {
+    BackgroundColor<<external>> White
+    BackgroundColor<<executable>> #e3f6e3
+}
+skinparam DatabaseBackgroundColor LightYellow
+skinparam QueueBackgroundColor #e4fafb
+'========================= Components ========================'
+component ":gateway" {
+    portin "API" as GATEWAY_API
+    portout "User service \n Public API" as GATEWAY_USR_API
+}
+
+component ":User Service" {
+    portin "User and Group \n Services" as USER_SERVICES
+    portout "Data \n Access" as USR_DA
+    portout "Publish \n group events" as USR_PUB
+}
+
+GATEWAY_USR_API -(0- USER_SERVICES : <<rpc>>
+database ":User \n Database" as USR_DB <<infrastructure>> {
+    portin " " as USR_DB_DA
+}
+USR_DA -(0- USR_DB_DA : <<database connector>>
+
+queue ":Message \n broker" <<infrastructure>> {
+    portin "Publish \n group events" as MB_PUB_GROUP
+}
+USR_PUB -(0- MB_PUB_GROUP : <<publish>>
+@enduml
+```
+
 #### Location Service
 
 ```plantuml
