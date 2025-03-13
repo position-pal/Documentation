@@ -101,7 +101,12 @@ package application {
 
 ## Interaction
 
-The main flow scenario is depicted in the following sequence diagram:
+The main flow scenario is describe below and depicted in the following sequence UML diagram.
+
+Each group member registers its device token to the notification service through an external infrastructural component that will handle the reliable delivery of the notification to the device.
+Here it is abstracted away as `PushNotificationInfrastructure`.
+This token is stored in the `UsersTokensRepository` and associated with the user id.
+When a notification command is received, the `NotificationPublisher` retrieves the members of the group and sends the notification to each member's device.
 
 ```plantuml
 @startumll notification-service-interaction
@@ -110,7 +115,7 @@ autonumber
 == User device token registration ==
 
 actor "Group Member" as User
-control PushNotificationService as PNS
+participant PushNotificationInfrastructure as PNS
 participant UsersTokensService as UTS
 database UsersTokensRepository as UTR
 database GroupsRepository as GR

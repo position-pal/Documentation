@@ -168,7 +168,7 @@ This ensures that the consumers of every Position Pal package and image are alwa
 
 ## Continuous Integration and Delivery
 
-The _Continuous Integration_ pipeline is described by the following diagram:
+The _Continuous Integration_ pipeline of all microservices is described by the following diagram:
 
 ```mermaid
 graph TB;
@@ -227,6 +227,41 @@ graph TB;
 - **Publish-doc**: a concurrent job that generates the documentation for the project and publishes it on GitHub Pages.
 - **Publish-images**: a concurrent job that publishes the multi-platform docker image on the DockerHub registry.
 - **Success**: the final job that runs successfully if all the previous steps have not failed.
+
+For the Gateway, a custom pipeline has been designed to take into account the fact that it hosts the end-to-end tests.
+Indeed, in order to correctly run them, they need to have configured a set of secrets, including the Mapbox API key, the Firebase configuration file and the Akka license key.
+These are available only in the repository and cannot be used in forks or in PRs from forks to prevent the secrets from being exposed.
+For this reason, the pipeline is designed to detect if the workflow have access to the required secrets and, if not, it skips the end-to-end tests.
+In case a PR is opened from a fork, a comment is automatically triggered to warn the contributor a review from a team member is required to validate the changes and then push them to a pre-release branch where the secrets are available and the end-to-end tests can be run.
+Once also the end-to-end tests are successful, the PR can be merged into the main branch.
+
+The modified workflow for the gateway is depicted in the following diagram:
+
+```mermaid
+graph TB;
+  dispatcher(["0. dispatcher"])
+  dispatcher --> build;
+  detect-secrets(["1. detect-secrets"])
+  build(["2. Matrix build on MacOS, Linux, Windows"])
+  e2e(["3. End-to-End tests"])
+  build --> e2e
+  detect-secrets --> e2e
+  e2e --> dry-delivery
+  dry-delivery(["2. dry-delivery"])
+  release(["3. release"])
+  dry-delivery --> release;
+  publish-images(["5. publish-images"])
+  release --> publish-images;
+  publish-doc(["4. publish-doc"])
+  release --> publish-doc;
+  success(["6. success"])
+  build .-> success
+  e2e .-> success
+  dry-delivery .-> success
+  release .-> success
+  publish-doc --> success
+  publish-images --> success;
+```
 
 ## Additional Bots & Tools
 

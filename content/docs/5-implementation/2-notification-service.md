@@ -74,9 +74,45 @@ component ":notification-service" {
 
 -->
 
-## Message broker
+## Notification commands
 
 Like already presented in the [Architecture Design](/docs/3-arch-design/2-architecture-design/) section, the notification service is integrated with the message broker to receive notification commands from other microservices.
+
+It does this via a **durable** **header**-based **exchange** named `push-notifications` to which other services can publish the notifications commands presented in the [Shared Kernel design section](/docs/4-detailed-design/1-shared-kernel).
+The notification service is expected to find in the message header the type of the command (i.e. the `CommandType` in the shared-kernel class diagram) so that it can handle the notification accordingly.
+
+The choice of a header-based exchange has been made to allow the notification service to bound multiple queues to the same exchange, each one with a different set of headers, to handle different types of notifications, in a extensible and scalable way.
+Indeed, looking to extendibility, the notification service can be easily extended to handle new types of notifications by adding new queues bound to the `push-notifications` exchange, each one with a different set of headers.
+In fact, the header-based exchange is a type of exchange that routes messages based on the value of the message header.
+When a message is published to the exchange, the exchange will inspect the header of the message and route it to the queues that are bound to the exchange based on the header values.
+
+```mermaid
+graph LR
+    subgraph RabbitMQ Broker
+        HeadersExchange["Headers Exchange"]
+        QueuePush["Queue: Push Notifications"]
+
+        subgraph Future Extension
+            QueueEmail["Queue: Email Notifications"]
+            QueueSMS["Queue: SMS Notifications"]
+        end
+    end
+
+    Producer["Producer: \n Send Command"]
+    Microservice["Consumer: \n Notification Microservice"]
+
+    Producer -- Publishes Message \nwith Headers --> HeadersExchange
+
+    HeadersExchange -- "x-match: all, type=push, \n command=GroupWisePushNotification" --> QueuePush
+    HeadersExchange -- "x-match: all, type=push, \n command=CoMembersPushNotification" --> QueuePush
+
+    QueuePush --> Microservice
+
+    HeadersExchange -. "x-match: all, type=email, command=UserEmailNotification" .-> QueueEmail
+    HeadersExchange -. "x-match: all, type=sms, command=UserSMSNotification" .-> QueueSMS
+```
+
+The fact the exchange is durable ensures that the exchange will survive a broker restart, and the messages published to it will be persisted until they are delivered to a consumer notification instance.
 
 
 ## Push Notifications

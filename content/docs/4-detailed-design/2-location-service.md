@@ -279,11 +279,11 @@ package application {
 - `RealTimeTracking`: the service responsible for handling the driving events, acting as an input port for the external adapters. It allows to register observers to be get back real-time updates.
 - Clients can in any moment get a snapshot of the user's state and location by querying the `UsersSessionService` service, which is responsible for managing the user's session state.
   - The actual tracking information are stored through the `UserSessionStore` repository, which is responsible for the persistence of the user's session state. A `UserSessionStore` is both a `Writer` and a `Reader` for the `Session` entity. Separate write-side and read-side interfaces are defined to ensure the separation of concerns and the single responsibility principle, leaving the implementation open to adhere to CQRS pattern.
-- `UserGroupsService` is responsible for managing the saving and retrieval of the groups members through the `UserGroupsStore` repository. Updates happen thanks the events propagated by the User service.
+- `UserGroupsService` is responsible for managing the saving and retrieval of the groups members through the `UserGroupsStore` repository. Updates happen thanks the events propagated by the User service via the message broker.
 
 ### Interaction
 
-The interaction between the main components of the system is described in the following sequence diagram.
+The interaction concerning the real-time user tracking between the main components of the system is described in the following sequence diagram.
 
 The Group Member connects to the `RealTimeTracking` service through a `Real Time Communication Connector` starting observing the updates of the group members it belongs to.
 However, before starting reacting to these updates, it fetches the current state of all group members through the `UsersSessionService` service, ensuring a consistent view of their state.
@@ -291,6 +291,7 @@ Once the current state of all members is obtained, it starts reacting to the upd
 The `RealTimeTracking` service, upon receiving the updates, reacts to the events and updates the user's session state, sending back the result to all the group members currently observing group's changes.
 
 Please, note the diagram illustrates only the main success flow, leaving out the error handling and the edge cases.
+Moreover, the interaction between the Group Member and the tracking services is mediated by the gateway, which is not shown in the diagram.
 
 ```plantuml
 @startuml location-service-interaction
@@ -315,7 +316,7 @@ RTT --> RTC: ok
 deactivate RTT
 RTC --> User: ok
 
-User -> USS: ofGroup(groupId)
+User -> USS: UsersSessionService.ofGroup(groupId)
 activate USS
 loop#Lightblue for each group member
     USS -> USSS: sessionOf(<scope>)
