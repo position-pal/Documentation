@@ -1,5 +1,5 @@
 ---
-weight: 400
+weight: 402
 title: "User and Group Service design"
 description: ""
 draft: false
@@ -16,7 +16,7 @@ As per best practices, the design is based on the **Domain-Driven Design** princ
 The main domain concepts and events are presented hereafter and reified in the following classes structure, following the DDD building blocks.
 
 ```plantuml 
-@startuml
+@startuml user-group-service-structure
 package domain {
   package user {
     interface User <<entity>> {
@@ -96,6 +96,7 @@ Captures the event of adding a user to a specific group by linking the _UserId_ 
 Records the removal of a user from a group, including both _UserId_ and _GroupId_.
 
 ```plantuml
+@startuml user-group-service-application
 package application{
   package repository {
     interface UserRepository <<repository>> {
@@ -137,7 +138,9 @@ package application{
   service.GroupService ..> event.UserAddedToGroup : publishes
   service.GroupService ..> event.UserRemovedFromGroup : publishes
 }
+@enduml
 ```
+
 - **`Repositories:`**
 
   - **`UserRepository:`** Abstracts the persistence operations for User entities by exposing methods such as save(user: User), findById(id: UserId): User, and delete(user: User).
