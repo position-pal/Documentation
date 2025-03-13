@@ -19,7 +19,7 @@ The main domain concepts and events are presented hereafter and reified in the f
 
 ```plantuml 
 @startuml location-service-structure-domain
-package shared.kernel.domain {
+package shared.kernel.domain.entities {
     interface User <<entity>>
     interface UserId <<value object>>
     interface GroupId <<value object>>
@@ -59,7 +59,7 @@ package domain {
     DomainEvent *-right-> "1" Scope
 
     interface DrivenEvent extends DomainEvent
-    class UserUpdate <<domain event>> implements DrivenEvent {
+    interface UserUpdate <<domain event>> implements DrivenEvent {
         + position: Option[GRSLocation]
         + status: UserState
     }
@@ -67,34 +67,34 @@ package domain {
     interface DrivingEvent extends DomainEvent
     interface ClientDrivingEvent extends DrivingEvent
 
-    class SampledLocation <<domain event>> {
+    interface SampledLocation <<domain event>> {
         + position: GPSLocation
     }
     ClientDrivingEvent <|.. SampledLocation
-    class SOSAlertTriggered <<domain event>> {
+    interface SOSAlertTriggered <<domain event>> {
         + position: GPSLocation
     }
     ClientDrivingEvent <|.. SOSAlertTriggered
-    class SOSAlertStopped <<domain event>>
+    interface SOSAlertStopped <<domain event>>
     ClientDrivingEvent <|... SOSAlertStopped
-    class RoutingStarted <<domain event>> {
+    interface RoutingStarted <<domain event>> {
         + position: GPSLocation
         + mode: RoutingMode
         + destination: GPSLocation
         + expectedArrival: Instant
     }
     ClientDrivingEvent <|.. RoutingStarted
-    class RoutingStopped <<domain event>> 
+    interface RoutingStopped <<domain event>> 
     ClientDrivingEvent <|... RoutingStopped
 
     interface InternalDrivingEvent extends DrivingEvent
-    class WentOffline <<domain event>>
+    interface WentOffline <<domain event>>
     InternalDrivingEvent <|... WentOffline
-    class StuckAlertTriggered <<domain event>> 
+    interface StuckAlertTriggered <<domain event>> 
     InternalDrivingEvent <|.. StuckAlertTriggered
-    class StuckAlertStopped <<domain event>> 
+    interface StuckAlertStopped <<domain event>> 
     InternalDrivingEvent <|... StuckAlertStopped
-    class TimeoutAlertTriggered <<domain event>> 
+    interface TimeoutAlertTriggered <<domain event>> 
     InternalDrivingEvent <|.. TimeoutAlertTriggered
 
     GPSLocation "1" <--* RoutingStarted

@@ -43,34 +43,6 @@ package domain {
     Group *-right-> "1" GroupId
     Group --> "0..*" User
   }
-  
-  package event {
-    interface DomainEvent <<event>> {
-    }
-    
-    class UserCreated <<event>> {
-      + userId: UserId
-      + name: String
-      + email: String
-    }
-    class GroupCreated <<event>> {
-      + groupId: GroupId
-      + name: String
-    }
-    class UserAddedToGroup <<event>> {
-      + userId: UserId
-      + groupId: GroupId
-    }
-    class UserRemovedFromGroup <<event>> {
-      + userId: UserId
-      + groupId: GroupId
-    }
-    
-    UserCreated ..|> DomainEvent
-    GroupCreated ..|> DomainEvent
-    UserAddedToGroup ..|> DomainEvent
-    UserRemovedFromGroup ..|> DomainEvent
-  }
 }
 @enduml
 ```
@@ -97,7 +69,7 @@ Records the removal of a user from a group, including both _UserId_ and _GroupId
 
 ```plantuml
 @startuml user-group-service-application
-package application{
+package application {
   package repository {
     interface UserRepository <<repository>> {
       + save(user: User): void
@@ -117,7 +89,7 @@ package application{
   
   package service {
     interface UserService <<service>> {
-      + createUser(name: String, email: String, password: String): User
+      + createUser(name: String, surname, email: String, password: String): User
       + updateUser(user: User): void
       + deleteUser(id: UserId): void
 
@@ -128,16 +100,36 @@ package application{
       + addUserToGroup(user: User, group: Group): void
       + removeUserFromGroup(user: User, group: Group): void
 
-            + TODO ADD METHODS FOR ADDING/REMOVING USERS
+      + TODO ADD METHODS FOR ADDING/REMOVING USERS
     }
   }
-  service.UserService ..> repository.UserRepository : uses
-  service.GroupService ..> repository.GroupRepository : uses
-  service.UserService ..> event.UserCreated : publishes
-  service.GroupService ..> event.GroupCreated : publishes
-  service.GroupService ..> event.UserAddedToGroup : publishes
-  service.GroupService ..> event.UserRemovedFromGroup : publishes
 }
+
+package shared.kernel.domain.events {
+    interface AddedMemberToGroup <<domain event>> {
+        + groupId: GroupId
+        + addedMember: User
+    }
+    interface GroupCreated <<domain event>> {
+        + groupId: GroupId
+        + createdBy: User
+    }
+    interface GroupDeleted <<domain event>> {
+        + groupId: GroupId
+    }
+    interface RemovedMemberToGroup <<domain event>> {
+        + groupId: GroupId
+        + removedMember: User
+    }
+}
+
+  application.service.UserService ..> application.repository.UserRepository : uses
+  application.service.GroupService ..> application.repository.GroupRepository : uses
+  application.service.GroupService ..> shared.kernel.domain.events.GroupDeleted : publishes
+  application.service.GroupService ..> shared.kernel.domain.events.GroupCreated : publishes
+  application.service.GroupService ..> shared.kernel.domain.events.AddedMemberToGroup : publishes
+  application.service.GroupService ..> shared.kernel.domain.events.RemovedMemberToGroup : publishes
+
 @enduml
 ```
 
@@ -179,13 +171,14 @@ Please, note the diagram illustrates only the main success flow, leaving out the
 ```plantuml
 @startuml user-group-service-full-behavior
 autonumber 1.0.0
-autoactivate on
 
 actor "User" as U
 participant "Auth Service" as AS
 participant "Group Handler" as GH
 database "User-Group Store" as UGS
 queue "Event Bus" as EB
+
+activate EB
 
 == User Registration ==
 U -> AS: registerUser(username, email, password)

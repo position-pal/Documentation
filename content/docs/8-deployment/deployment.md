@@ -7,7 +7,6 @@ mermaid: true
 toc: true
 ---
 
-# Deployment
 Since our system is composed of multiple microservices, we decided to deploy it on a **Kubernetes cluster**. Kubernetes is an open-source platform designed to automate deploying, scaling, and operating application containers. It is a powerful tool that allows us to manage our microservices in a more efficient way. 
 
 In particular the system is mapped on the main abstractions tha kubernetes provides:
@@ -29,6 +28,7 @@ Each microservice is deployed in a separate namespace inside the cluster, this a
 
 The architecture of the system is shown below:
 ```plantuml
+@startuml deployment-architecture
 scale max 1024 width
 
 skinparam nodesep 10
@@ -166,6 +166,7 @@ Cluster_Boundary(cluster, "PositionPal Kubernetes Cluster") {
     Rel(gateway_pod1, locationSvc, " ")
     Rel(gateway_pod1, chatSvc, " ")
 }
+@enduml
 ```
 ## Tools used
 The deployment of the system involves the use of several tools that allow to automate the process of building and deploying the services.

@@ -1,5 +1,5 @@
 ---
-weight: 502
+weight: 503
 title: "Chat Service implementation details"
 description: ""
 draft: false
@@ -65,7 +65,7 @@ The `ClientActor` is instead responsible for managing the communication between 
 ![Ws Flow](/images/wsflow.svg)
 
 The image above shows the flow of messages between the client and the group. When a new connection is estabilished then a new Sink and Source are created:
-- The sink is used to receive messages from the client and forward them to the group using the `GroupService`,
+- The sink is used to receive messages from the client and forward them to the group using the `GroupService`;
 - The source is an Actor that is used to send messages transmitted on the group to the client.
 
 The reference of the source is the ClientActor itself, and it is saved in the respective `GroupEventSourceHandler` that manages the group the client is part of.

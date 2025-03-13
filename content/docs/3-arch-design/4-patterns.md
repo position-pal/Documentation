@@ -79,3 +79,4 @@ This pattern allows each service to be deployed and scaled independently, ensuri
 
 ### [Service deployment platform](https://microservices.io/patterns/deployment/service-deployment-platform.html)
 
+TODO

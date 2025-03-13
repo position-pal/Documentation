@@ -17,7 +17,7 @@ Here are presented the main components of the chat service, we start describing 
 ```plantuml
 @startuml chat-service-structure-domain
 hide empty members
-package shared.kernel.domain {
+package shared.kernel.domain.entities {
     interface User <<entity>>
     interface UserId <<value object>>
     interface GroupId <<value object>>
@@ -78,13 +78,13 @@ package domain {
 @enduml
 ```
 
-- **Client**: An entity that represents a user connected to the chat service. It has an identifier, a status, and a reference to the output channel.
-  - **ClientID**: A value object that represents the unique identifier of a client that connects to the chat service. This is a 1-1 mapping to the user identifier used in the shared kernel.
+- **`Client`**: An entity that represents a user connected to the chat service. It has an identifier, a status, and a reference to the output channel.
+  - **`ClientID`**: A value object that represents the unique identifier of a client that connects to the chat service. This is a 1-1 mapping to the user identifier used in the shared kernel.
   
-  - **OutputReference**: A value object that represents the reference to the output channel of a client. This reference is used to send messages to the client.
-- **Group**: An entity that represents a group of clients that can communicate with each other. It has an identifier and a list of clients.
-  - **GroupID**: A value object that represents the identifier of a group. This is a 1-1 mapping to the group identifier used in the shared kernel.
-- **ClientMessage**: An entity that represents a message sent by a client to a group. It contains the sender, the group, the content, and the timestamp of the message.
+  - **`OutputReference`**: A value object that represents the reference to the output channel of a client. This reference is used to send messages to the client.
+- **`Group`**: An entity that represents a group of clients that can communicate with each other. It has an identifier and a list of clients.
+  - **`GroupID`**: A value object that represents the identifier of a group. This is a 1-1 mapping to the group identifier used in the shared kernel.
+- **`ClientMessage`**: An entity that represents a message sent by a client to a group. It contains the sender, the group, the content, and the timestamp of the message.
 
 In the following diagram are presented the main services interfaces that will be used to interact with the domain entities and to respond to the external events.
 

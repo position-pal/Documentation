@@ -55,7 +55,7 @@ In order to avoid overwhelming the reader with an all-encompassing but rather co
 #### User and Group Service
 
 ```plantuml
-@startuml arch-cc-location
+@startuml arch-cc-user-group
 '========================== Styling =========================='
 skinparam component {
     BackgroundColor<<external>> White
@@ -181,6 +181,8 @@ NOT_SUB_NOTIF -0)- MB_SUB_NOTIF
 ```
 
 ### Deployment View
+
+TODO
 
 ## Hexagonal Architecture
 

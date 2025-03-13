@@ -135,7 +135,11 @@ Moreover we distinguish between _Commands_ and _Events_ to highlight the differe
 
 ### Ubiquitous Language
 
+TODO
+
 ### Events
+
+TODO
 
 ## Bounded Context Integration
 
@@ -148,6 +152,6 @@ The following diagram shows the context map of the PositionPal system:
 ![Context Map](/images/context-map.svg)
 
 The **shared kernel** collects the shared entities and domain logic that are in common between the bounded contexts.
-As per best practices, the overlapping module will be limited as much as possible to avoid coupling between the contexts and exposing only that part of the model that, otherwise, would be duplicated in all the contexts.
+As per best practices, the overlapping module will be limited as much as possible to avoid coupling between the contexts and exposing only the part of the model that, otherwise, would be duplicated in all the contexts.
 
-The **conformist** pattern applies to users and groups management context: ...
+The **conformist** pattern applies to users and groups management context: the downstream context (Group Management) conform to the upstream context (Users Management) model to simplify the integration and avoid the complexity of translation between bounded contexts. Although this approach may constrain the downstream team's design flexibility, it significantly simplifies integration. Since the upstream context (Users Management) has more influence in this relationship, conforming to its model facilitates clearer communication and reduces integration overhead.

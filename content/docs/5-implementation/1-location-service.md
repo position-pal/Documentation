@@ -1,5 +1,5 @@
 ---
-weight: 501
+weight: 502
 title: "Location Service implementation details"
 description: ""
 draft: false
