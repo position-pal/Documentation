@@ -23,7 +23,7 @@ The team has decided to implement the microservices using a **one-repository-per
 The choice of adopting a _one-repository-per-service_ approach over a _mono-repo_ was made to ensure that each microservice can be developed, tested, and deployed independently from the others, allowing for a more flexible and scalable development process, including a faster build time and CI/CD pipeline execution and an easier management of the codebase dependencies.
 However, this approach has some drawbacks, such as the need to setup and configure the build tools for each project with a consistent configuration and, especially, how to handle common code across the different microservices.
 
-The first problem has been partially mitigated by the use of **GitHub Templates**, which allowed us to create template repositories with a common structure and configuration that can be used to bootstrap new projects.
+The first problem has been partially mitigated by the use of **GitHub Templates**, which allowed us to create template repositories with a common structure and configuration that can be used to bootstrap new projects (you can find [here the Scala template](https://github.com/position-pal/scala-template) and [here the Kotlin template](https://github.com/position-pal/kotlin-template)).
 
 The second problem has been faced with the _shared kernel_.
 Indeed, code inside the _shared kernel_ must be shared across all the microservices and must be kept in sync with the latest changes.
