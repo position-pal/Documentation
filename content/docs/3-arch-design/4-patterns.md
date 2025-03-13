@@ -3,6 +3,7 @@ weight: 304
 title: "Architectural Patterns"
 description: ""
 toc: true
+mermaid: true
 ---
 
 In this page are collected the Microservice Architectural Pattern we used in the design of the system, following the [Chris Richardson's taxonomy](https://position-pal.github.io/docs/3-arch-design/4-patterns/)
