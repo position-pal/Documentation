@@ -25,7 +25,26 @@ As in the observer pattern, the publisher does not know who is interested in the
 
 On the downside, this approach makes the system eventually consistent, but this is a trade-off that has been accepted in order to ensure the system's scalability and performance.
 
-### [Event sourcing](https://microservices.io/patterns/data/event-sourcing.html) & [CQRS](https://microservices.io/patterns/data/cqrs.html)
+### [Event sourcing](https://microservices.io/patterns/data/event-sourcing.html)
+
+For the location and chat services, the _Event Sourcing_ pattern is adopted.
+This patterns consists of persisting the state of a business entity such as a sequence of state-changing events.
+Whenever the state of the business entity changes a new event is appended to the list of events, making it possible for the application to reconstruct the entity's state by replaying the events.
+
+This approach suits well both the location and chat services, as they need to keep track of the history of the location updates and chat messages, respectively.
+Moreover, this approach allows the system to be more resilient to failures, as the state can be reconstructed by replaying the events, and more scalable as it enables efficient distribution of workload across multiple services, reduces contention on the database by leveraging an append-only storage model, and facilitates the creation of optimized read models through event-driven processing.
+
+### [CQRS](https://microservices.io/patterns/data/cqrs.html)
+
+Since different services, other than the Users & Groups service
+requires the groups information to properly function, the _Command Query Responsibility Segregation_ pattern is adopted.
+
+Every microservice that has the need to know the group members information have their own read-only 'replica' that is designed specifically to serve the queries of that service.
+The service keeps the database up to date by subscribing to Domain events published by the service that own the data, in our case the Users & Groups service.
+This pattern allows each service to support its own denormalized view of the groups data that is optimized for its specific needs, ensuring that the services are loosely coupled and that the system is scalable and performant.
+No complex and slow queries are needed to be executed on the user service to retrieve the group members information, as the data is already available in the read-only replica of the service that needs it.
+This also improves the overall system responsiveness.
+
 
 ## Communication styles
 

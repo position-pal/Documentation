@@ -93,10 +93,64 @@ package application {
 
 - `Token` is a value object that represents the token used to identify the device of a user.
 - `UserToken` is an entity that represents the association between a user and a token.
-- `UsersTokensService` is the service that allows registering and invalidating tokens for users. 
+- `UsersTokensService` is the service that allows registering and invalidating tokens for users.
 - `UsersTokensRepository` is the repository that stores the associations between users and tokens.
 - `NotificationPublisher` is the service that sends notifications to users.
   - `PublishingTargetStrategy` is the strategy used to determine the target of the notification. Two stategies exists: one to send to all members of a group (corresponding to the `GroupWisePushNotification` command) and another to send to all members sharing a group with a user (corresponding to the `CoMembersPushNotification` command).
 - `GroupsRepository` is the repository that allows storing and retrieving the members of the groups. This is called by the message broker adapter on every events whose topic is related to groups state changes.
 
 ## Interaction
+
+The main flow scenario is depicted in the following sequence diagram:
+
+```plantuml
+@startumll notification-service-interaction
+autonumber
+
+== User device token registration ==
+
+actor "Group Member" as User
+control PushNotificationService as PNS
+participant UsersTokensService as UTS
+database UsersTokensRepository as UTR
+database GroupsRepository as GR
+participant NotificationPublisher as NP
+queue "Message Broker" as Broker
+
+activate User
+activate Broker
+
+User -> PNS: Request token for my device
+activate PNS
+PNS -> User: <token>
+deactivate PNS
+User -> UTS: Register <uid, token>
+activate UTS
+UTS -> UTR: Save <uid, token>
+activate UTR
+UTS <<-- UTR: Ok
+User <<-- UTS: Ok
+deactivate UTR
+
+== A notification command is received ==
+
+Broker -->> NP: Send <notification> to all \n members of group <gid>
+activate NP
+NP --> GR: Get members of <gid>
+activate GR
+GR -->> NP: List of members
+
+loop#gold forach member
+    NP -> UTR: Get <member> token
+    activate UTR
+    UTR -->> NP: Token
+    deactivate UTR
+    NP -> PNS: Send <notification> to device <token>
+    activate PNS
+    PNS -->> NP: Ok
+    PNS -->> User: Notification
+    deactivate PNS
+end
+
+@enduml
+```

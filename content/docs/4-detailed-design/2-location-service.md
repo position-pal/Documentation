@@ -255,14 +255,14 @@ package application {
             + type Outcome
         }
 
-        interface RealTimeTracking <<service>> <<in port>> {
+        interface RealTimeTrackingService <<service>> <<in port>> {
             + handle(event: ClientDrivingEvent)
             + addObserverFor(scope: Scope)(observer: OutcomeObserver)
             + removeObserverFor(scope: Scope)(observer: OutcomeObserver)
         }
-        RealTimeTracking *--> OutcomeObserver
+        RealTimeTrackingService *--> OutcomeObserver
 
-        abstract class RealTimeTracker implements RealTimeTracking {
+        abstract class RealTimeTracker implements RealTimeTrackingService {
             # maps: MapsService
             # notifier: NotificationService
         }
@@ -299,7 +299,7 @@ autonumber
 actor "Group Member" as User
 control "Real Time \n Communication Connector" as RTC
 participant UsersSessionService as USS
-participant RealTimeTracking as RTT
+participant RealTimeTrackingService as RTT
 database UserSessionStore as USSS
 
 == Use case: Real-time tracking ==

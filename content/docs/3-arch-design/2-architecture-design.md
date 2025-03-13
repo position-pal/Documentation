@@ -34,17 +34,17 @@ The API Gateway is responsible for routing the requests to the appropriate servi
 
 **To address the challenges of scalability, decoupling, and real-time processing, the system's architecture was designed following an event-driven microservice approach, in which the microservices are mainly designed to _interact_ by means of event streams.**
 
-This paradigm enables _asynchronous communication_ between the services, allowing them to be _loosely coupled_ and _independent_ from each other, hence making the system more _resilient_ and _maintainable_.
+This paradigm enables **_asynchronous communication_** between the services, allowing them to be _loosely coupled_ and _independent_ from each other, hence making the system more _resilient_ and _maintainable_.
 
 For this purpose, the architecture is designed around a **Message/Event Broker**, which acts as a central communication hub for the microservices, enabling them to _publish_ and _subscribe_ to events, and _exchange messages_ in a _reliable_ and _scalable_ way.
 
-Nonetheless, regarding the communications between the client and the microservices through the API Gateway, an RPC protocol is used, in order to ensure synchronous communication.
+Nonetheless, regarding the communications between the client and the microservices through the API Gateway, an **RPC** protocol is used, in order to ensure synchronous communication.
 This approach enables the client to _invoke_ remote procedures on the microservices and receive a response in a synchronous manner (e.g. for the authentication process).
 
 Lastly, each microservice follow the best practice of having **its own database**, ensuring _data isolation_ and _independence_ from other services, allowing a _loosely coupled_ architecture whose communications happen **only** through the message broker via a standard protocol.
 This has also the advantage of letting the developers change a service's schema without affecting, and thus coordinating, with other services teams.
 
-Following these high-level principles, in the following sections we provide a detailed view of the system's architecture, though the three main strucutural views: _Components and Connectors_, _Modules_ and _Allocation_.
+Following these high-level principles, in the following sections we provide a detailed view of the system's architecture, though the three main structural views: _Components and Connectors_, _Modules_ and _Allocation_.
 
 ### C&C View
 
@@ -89,6 +89,9 @@ USR_PUB -(0- MB_PUB_GROUP : <<publish>>
 ```
 
 #### Location Service
+
+The Location Service interacts with the Gateway, exposing two different API ports: one for real-time tracking via a real-time connector, allowing users to be tracked, and another for accessing tracking service information through an RPC connector.
+Like, any other microservice, it has its own database for storing the tracking data, and it interacts with the message broker to publish notifications and subscribe to group events.
 
 ```plantuml
 @startuml arch-cc-location
@@ -138,6 +141,9 @@ LOC_SUB -(0- MB_SUB_GRPS : <<subscribe>>
 
 #### Notification service
 
+The notification service expose a input port through which an RPC connector is possible to subscribe to notifications by clients.
+It has a data access port to interact with the database and two output ports to receive group updates and notification commands.
+
 ```plantuml
 @startuml arch-cc-notification
 '========================== Styling =========================='
@@ -148,7 +154,13 @@ skinparam component {
 skinparam DatabaseBackgroundColor LightYellow
 skinparam QueueBackgroundColor #e4fafb
 '========================= Components ========================'
+component ":gateway" {
+    portin "API" as GATEWAY_API
+    portout "Notification service Public API" as GATEWAY_NOT_API
+}
+
 component ":notification-service" {
+    portin "Notification Subscription \n Service API" as NOT_API
     portout "Data Access" as NOT_DA
     portout "Receive groups \n updates" as NOT_SUB_GRPS
     portout "Receive \n notifications \n commands" as NOT_SUB_NOTIF
@@ -156,6 +168,7 @@ component ":notification-service" {
 database ": Notification \n Service \n Database" as  NOT_DB {
     portin " " as NOT_DB_DA
 }
+GATEWAY_NOT_API -(0- NOT_API : <<rpc>>
 NOT_DA -(0- NOT_DB_DA : <<database connector>>
 
 queue ":Message \n broker" <<infrastructure>> {

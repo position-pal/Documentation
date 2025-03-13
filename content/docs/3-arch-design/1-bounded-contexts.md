@@ -147,4 +147,7 @@ The following diagram shows the context map of the PositionPal system:
 
 ![Context Map](/images/context-map.svg)
 
-...
+The **shared kernel** collects the shared entities and domain logic that are in common between the bounded contexts.
+As per best practices, the overlapping module will be limited as much as possible to avoid coupling between the contexts and exposing only that part of the model that, otherwise, would be duplicated in all the contexts.
+
+The **conformist** pattern applies to users and groups management context: ...
