@@ -5,7 +5,7 @@ description: ""
 toc: true
 ---
 
-In this page are collected the used Microservice Architectural Pattern we used in the design of the system.
+In this page are collected the Microservice Architectural Pattern we used in the design of the system, following the [Chris Richardson's taxonomy](https://position-pal.github.io/docs/3-arch-design/4-patterns/)
 
 ## Service collaboration
 
@@ -24,6 +24,8 @@ This approach ensures that all the services that need to know this information c
 As in the observer pattern, the publisher does not know who is interested in the event and, therefore, does not need to be aware of the subscribers that may change in the future (for example because of the addition of a new service) with no impact on the publisher.
 
 On the downside, this approach makes the system eventually consistent, but this is a trade-off that has been accepted in order to ensure the system's scalability and performance.
+
+### [Event sourcing](https://microservices.io/patterns/data/event-sourcing.html) & [CQRS](https://microservices.io/patterns/data/cqrs.html)
 
 ## Communication styles
 
@@ -50,11 +52,10 @@ For each request, the client must provide a valid access token, which is then va
 
 ## Deployment Patterns
 
-### [**Service-per-Container**](https://microservices.io/patterns/deployment/service-per-container.html)
+### [Service-per-Container](https://microservices.io/patterns/deployment/service-per-container.html)
 
 Each service is packages as a container image and deployed as a separate and independent container.
 This pattern allows each service to be deployed and scaled independently, ensuring that the system is _resilient_ and _scalable_.
 
 ### [Service deployment platform](https://microservices.io/patterns/deployment/service-deployment-platform.html)
-
 
