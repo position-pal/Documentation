@@ -68,13 +68,35 @@ End-to-End tests are the heaviest and slowest tests, as they validate the system
 
 These tests are placed in the access point of the system, i.e., the API gateway, and to be run against the whole system requires the local deployment of all the services along with a mocked version of the client app to make it possible to test real system notifications and interactions in a controlled and repeatable way.
 
-For this purpose a local deployment infrastructure has been set up using Docker Compose (more details on the Deployment section) with a custom template resolution strategy to allow the gateway test lifecycle to:
+For this purpose a local deployment infrastructure has been set up using Docker Compose with a custom template resolution strategy to allow the gateway test lifecycle to:
 
 1. package in a Docker image the gateway service with the latest changes;
 2. package the mocked client application in a Docker image;
-3. bring up all the system microservices along with the gateway and the mocked client application;
+3. bring up all the system microservices along with the gateway and the mocked client application. With a custom script and a custom option `--override` we override the default last push image for the gateway service with the local image built in step 1;
 4. run the end-to-end tests against the system;
 5. tear down the whole system.
+
+```js
+BeforeAll(async () => setupLocalDeployment());
+
+AfterAll(async () => teardownLocalDeployment());
+
+const setupLocalDeployment = () => {
+  console.log("Bring up the local testing environment");
+  run("docker build --no-cache -t local-gateway ."); // 1
+  run(`cd ${mockedAppPath} && docker build --no-cache -t mocked-app .`); // 2
+  run(`${deploymentScript} up --override gateway:local-gateway`); // 3
+  run(`docker run -d -v ${mockedAppPath}/firebase-config.json:/app/firebase-config.json -p 8080:8080 mocked-app`); // 3
+};
+
+const teardownLocalDeployment = () => { // 5
+  console.log("Tearing down the local testing environment");
+  run(`${deploymentScript} down`);
+  run('docker rm $(docker stop $(docker ps -a -q --filter ancestor=mocked-app --format="{{.ID}}"))');
+};
+
+const run = (command) => { /* Run on a shell the given command ... */ };
+```
 
 As presented in the [Domain Analysis](/docs/2-domain-analysis/1-functional-requirements/) section, the system has been end-to-end validated and tested using Gherking and Cucumber-JS libraries, along with [Puppeteer](https://pptr.dev) for browser automation and interactions.
 
