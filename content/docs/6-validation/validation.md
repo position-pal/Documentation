@@ -139,7 +139,58 @@ The full suite of end-to-end features and tests can be found [here](https://gith
 
 ## Stress Test
 
-Gio--
+Stress tests have been performed to evaluate the system's performance under extreme conditions, such as high loads and peak traffic.
+These are executed on the production environment, simulating a large number of concurrent users and requests to assess the system's stability, scalability, and responsiveness.
+
+In order to perform these test we used [k6](https://k6.io/), a load testing tool that allows to write test scripts in JavaScript and run them from the command line. In particular we leveraged on xk6, an extended version of k6 that allows to add extension to the tool, in our case we used the Faker extension to generate random data for the tests.
+
+Test are structured in scenarios that simulate different user behaviors and interactions with the system:
+
+```js
+export const smokeOptions = {
+    vus: 2,               
+    duration: '1m',       
+    thresholds: {
+      http_req_duration: ['p(95)<500'],  
+      http_req_failed: ['rate<0.01'],
+    },
+    tags: { test_type: 'smoke' },
+};
+
+export const loadOptions = {
+    stages: [
+      { duration: '2m', target: 50 },    
+      { duration: '5m', target: 50 },    
+      { duration: '2m', target: 0 },    
+    ],
+    thresholds: {
+      http_req_duration: ['p(95)<1000', 'p(99)<1500'],
+      http_req_failed: ['rate<0.05'],
+    },
+    tags: { test_type: 'load' },
+};
+
+export const stressOptions = {
+    stages: [
+      { duration: '2m', target: 100 },   
+      { duration: '5m', target: 100 },   
+      { duration: '5m', target: 200 },   
+      { duration: '10m', target: 200 },  
+      { duration: '5m', target: 300 },   
+      { duration: '10m', target: 300 },  
+      { duration: '2m', target: 0 },     
+    ],
+    thresholds: {
+      http_req_duration: ['p(95)<2000', 'p(99)<3000'], 
+      http_req_failed: ['rate<0.1'],
+    },
+    tags: { test_type: 'stress' },
+};
+```
+These scenarios represent three different levels of stress on the system: `smoke`, `load`, and `stress`. The `smoke` scenario simulates a small number of users and requests, it aims to verify the system's basic functionalities and responsiveness, the `load` scenario simulates a medium number of users and requests, simulating the system's performance under normal conditions while The `stress` scenario simulates a large number of users and requests verifying the system's performance under extreme conditions.
+
+Tests are composed of one or more stages where, each of these, represents a different level of stress on the system. Each stage has a duration and a target number of virtual users (VUs) that will be simulated during that stage. The `thresholds` object contains the performance thresholds that the system must meet during the test, such as the maximum duration of a request or the maximum failure rate.
+
 
 ## Quality Assurance
 

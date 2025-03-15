@@ -117,6 +117,21 @@ In this section are collected the **functional requirements** of the system in t
 
 ### Chat
 
+<em>
+
+   1. As a logged user \
+      I want to connecto to a group \
+      So that I can communicate with other group members
+
+   2. As a group member \
+      I want to send a message to the group \
+      So that I can communicate with other group members
+   
+   3. As a group member \
+      I want to disconnect from the group \
+      So that I can no longer communicate with other group members
+</em>
+
 ## Acceptance tests
 
 Following BDD principles, starting from the above user stories, a set of acceptance test specifications have been defined.

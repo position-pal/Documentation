@@ -132,12 +132,52 @@ LOC_PUB -(0- MB_PUB_NOTIF : <<publish>>
 LOC_SUB -(0- MB_SUB_GRPS : <<subscribe>>
 @enduml
 ```
-<!-- 
+
+#### Chat Service
+
+Similarly to the location service, the chat service exposes two different API ports: one for real-time chat communication via a real-time connector, and another for accessing chat service information through an RPC connector. It stores the chat data in its own database and interacts with the message broker for receiving group events.
+
 ```plantuml
 @startuml arch-cc-chat
+'========================== Styling =========================='
+skinparam component {
+    BackgroundColor<<external>> White
+    BackgroundColor<<executable>> #e3f6e3
+}
+skinparam DatabaseBackgroundColor LightYellow
+skinparam QueueBackgroundColor #e4fafb
+'========================= Components ========================'
+component ":gateway" {
+    portin "API" as GATEWAY_API
+    portin "Real-time API" as GATEWAY_REALTIME
+    portout "Chat service \n Real-time API" as GATEWAY_CHAT_REALTIME
+    portout "Chat service \n Public API" as GATEWAY_CHAT_API
+}
+
+component ":Chat Service" {
+    portin "Chat \n communication" as CHAT_REALTIME
+    portin "Chat \n API" as CHAT_API
+    portout "Data \n Access" as CHAT_DA
+    portout "Receive \n groups events" as CHAT_SUB
+}
+
+GATEWAY_CHAT_REALTIME --(0- CHAT_REALTIME : <<real-time connector>>
+GATEWAY_CHAT_API -(0- CHAT_API : <<rpc>>
+
+database ":Location \n Database" as LOC_DB <<infrastructure>> {
+    portin " " as CHAT_DB_DA
+}
+
+CHAT_DA -(0- CHAT_DB_DA : <<database connector>>
+
+queue ":Message \n broker" <<infrastructure>> {
+    portin "Subscribe \n groups events" as MB_SUB_GRPS
+}
+
+CHAT_SUB -(0- MB_SUB_GRPS : <<subscribe>>
 
 @enduml
-``` -->
+```
 
 #### Notification service
 
