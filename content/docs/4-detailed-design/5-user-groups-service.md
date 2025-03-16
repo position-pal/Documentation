@@ -31,6 +31,24 @@ package domain {
     User *-right-> "1" UserId
   }
 
+
+  package authentication {
+      interface Secret <<value object>> {
+          + value: String
+      }
+      interface Issuer <<value object>> {
+          + value: String
+      }
+      interface Audience <<value object>> {
+          + value: String
+      }
+  }
+
+  interface membership {
+    + userId: UserId
+    + groupId: GroupId
+  }
+
   package group {
     interface Group <<entity>> {
       + id: GroupId
@@ -43,6 +61,9 @@ package domain {
     Group *-right-> "1" GroupId
     Group --> "0..*" User
   }
+
+  membership *-down-> "1" UserId
+  membership *-down-> "1" GroupId
 }
 @enduml
 ```
@@ -51,21 +72,10 @@ package domain {
 
 - **`Group`** The Group entity represents a collection of users. It is identified by a _GroupId_ value object and has attributes like a group name and a list of members (Users). The association (Group → 0..* User) signifies that a group can have zero or more users, enabling flexible management of group memberships.
 
-- **`User-Group Context:`** Although not explicitly modeled as a value object in the diagram, the context in which events occur is defined by the association between a user and a group. This context is crucial for tracking state variations that might be specific to a group—allowing, for example, group-specific permissions or visibility settings.
+- **`Membership`** The Membership value object captures the relationship between a user and a group. It includes the _UserId_ and _GroupId_ value objects, establishing a many-to-many association between users and groups. This structure allows for efficient querying of group memberships and user-group relationships.
 
-- **`Domain Events:`** Domain events capture significant changes within the business context and play a key role in maintaining consistency and notifying other system components. All events implement the DomainEvent interface, ensuring a common structure (for instance, including a timestamp and references to the affected user and group). Key events include:
+- **`Secret`, `Issuer`, `Audience`** These value objects are part of the authentication domain and represent the secret key, issuer, and audience of the JWT token, respectively. They encapsulate the necessary information for token generation and validation, ensuring secure authentication and authorization processes.
 
-  - **`UserCreated:`**
-Triggered when a new user is created. It contains the UserId, name, and email, enabling other components (such as notification services) to react accordingly.
-
-  - **`GroupCreated:`**
-Signals the creation of a new group, carrying the _GroupId_ and group name to initiate processes like automatic configuration or internal notifications.
-
-  - **`UserAddedToGroup:`**
-Captures the event of adding a user to a specific group by linking the _UserId_ and _GroupId_.
-
-  - **`UserRemovedFromGroup:`**
-Records the removal of a user from a group, including both _UserId_ and _GroupId_.
 
 ```plantuml
 @startuml user-group-service-application
@@ -74,33 +84,48 @@ package application {
     interface UserRepository <<repository>> {
       + save(user: User): void
       + findById(id: UserId): User
-      + delete(user: User): void
-
-      + TODO ADD METHODS FOR UPDATING USER
+      + update(user: User): User
+      + deleteById(id: UserId): Boolean
+      + findAll(): List<User>
+      + findByEmail(email: String): User
     }
     interface GroupRepository <<repository>> {
       + save(group: Group): void
       + findById(id: GroupId): Group
-      + delete(group: Group): void
-
-      + TODO ADD METHODS FOR ADDING/REMOVING USERS
+      + update(group: Group): Group
+      + deleteById(id: GroupId): Boolean
+      + findAll(): List<Group>
+      + addMember(groupId: GroupId, user: User): Group
+      + removeMember(groupId: GroupId, user: User): Group
+      + findGroupsByUserEmail(email: String): List<Group>
+      + findGroupsByUserId(id: UserId): List<Group>
+    }
+    interface AuthRepository <<repository>> {
+      + checkCredentials(email: String, password: String): Boolean
     }
   }
   
   package service {
     interface UserService <<service>> {
-      + createUser(name: String, surname, email: String, password: String): User
-      + updateUser(user: User): void
-      + deleteUser(id: UserId): void
-
-      + TODO ADD METHODS FOR UPDATING USER
+      + createUser(user: User): User
+      + getUser(id: UserId): User
+      + updateUser(user: User): User
+      + deleteUser(id: UserId): Boolean
+      + getUserByEmail(email: String): User
     }
     interface GroupService <<service>> {
       + createGroup(name: String): Group
-      + addUserToGroup(user: User, group: Group): void
-      + removeUserFromGroup(user: User, group: Group): void
-
-      + TODO ADD METHODS FOR ADDING/REMOVING USERS
+      + getGroup(id: GroupId): Group
+      + updateGroup(groupId: GroupId, group: Group): Group
+      + deleteGroup(id: GroupId): Boolean
+      + addMember(groupId: GroupId, user: User): Group
+      + removeMember(groupId: GroupId, user: User): Group
+      + findAllGroupsOfUser(email: String): List<Group>
+      + findAllGroupsByUserId(id: UserId): List<Group>
+    }
+    interface AuthService <<service>> {
+      + authenticate(username: String, password: String): String
+      + authorize(token: String): Boolean
     }
   }
 }
@@ -125,6 +150,7 @@ package shared.kernel.domain.events {
 
   application.service.UserService ..> application.repository.UserRepository : uses
   application.service.GroupService ..> application.repository.GroupRepository : uses
+  application.service.AuthService ..> application.repository.AuthRepository : uses
   application.service.GroupService ..> shared.kernel.domain.events.GroupDeleted : publishes
   application.service.GroupService ..> shared.kernel.domain.events.GroupCreated : publishes
   application.service.GroupService ..> shared.kernel.domain.events.AddedMemberToGroup : publishes
@@ -139,13 +165,15 @@ package shared.kernel.domain.events {
 
   - **`GroupRepository:`** Similarly abstracts persistence for Group entities with equivalent operations.
 
+  - **`AuthRepository:`** Provides methods for checking user credentials during authentication.
+
 - **`Services:`**
 
   - **`UserService:`** Contains business logic for creating, updating, and deleting users. It leverages the UserRepository for data operations and publishes a UserCreated event when a new user is created.
 
   - **`GroupService:`** Manages group-related operations such as creating groups, adding users to groups, and removing users from groups. It uses the GroupRepository for data access and publishes GroupCreated, UserAddedToGroup, and UserRemovedFromGroup events as necessary.
 
-  // TODO CHECK EVENTS
+  - **`AuthService:`** Handles user authentication and authorization. It verifies user credentials against the AuthRepository and generates JWT tokens for authenticated users.
 
 ### Interaction
 The interaction between the main components of the system is described in the following sequence diagram.
