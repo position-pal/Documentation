@@ -97,12 +97,26 @@ Moreover we distinguish between _Commands_ and _Events_ to highlight the differe
 
 | 🏷️ Event Type | Event Name | Description |
 | ---------- | ---------- | ----------- |
-| **🚀 Driving event** | **SampledLocation** | The event sent from the client application to update the user's location. |
-| | **RoutingStarted** | The event sent from the client application to start the user's route tracking towards a destination. |
-| | **RoutingStopped** | The event sent from the client application to stop the user's route tracking. |
-| | **SOSAlertTriggered** | The event sent from the client application to trigger an SOS alert, carrying the user's location. |
-| | **SOSAlertStopped** | The event sent from the client application to stop the SOS alert. |
-| **📥 Driven event** | **UserUpdate** | The event sent from the Location Service to notify the client application about the user's state or location update. |
+| | **ClientJoinedToGroup** | The event triggered when a client join a group in order to start chat. |
+| | **ClientLeavedFromGroup** | The event triggered when a client leaves a group. |
+| | **ClientConnected** | The event sent from the client application when user logs in and is able to receive messages. |
+| | **ClientDisconnected** | The event sent from the client application when user logs out and is no longer reachable. |
+| | **Message** | The event sent from the client application when a new message is received in a group. |
+
+{{< /table >}}
+
+### Commands 
+
+{{< table "table-striped" >}}
+
+| Command | Description |
+| ------- | ----------- |
+| **DeleteGroup** | Delete a chat group. |
+| **ClientJoinsGroup** | Add a new client in a group. |
+| **ClientLeavesGroup** | Remove a client from a group. |
+| **ClientConnects** | Make a client become available for receiving new messages. |
+| **ClientDisconnects** | Make a client unavailable for receiving new messages. |
+| **SendMessage** | Send a message in a group. |
 
 {{< /table >}}
 
@@ -135,11 +149,30 @@ Moreover we distinguish between _Commands_ and _Events_ to highlight the differe
 
 ### Ubiquitous Language
 
-TODO
+{{< table "table-striped " >}}
+
+| Concept  | Description | Synonyms |
+| -------- | ----------- | -------- |
+| **Client** | An individual that connect to a chat group | User, Group Member |
+| **Group** | A set of Clients that chat between each other| Chat Room|
+| **Message** | A text message that is sent from a client in a group. | |
+
+{{< /table >}}
 
 ### Events
 
-TODO
+{{< table "table-striped" >}}
+
+| 🏷️ Event Type | Event Name | Description |
+| ---------- | ---------- | ----------- |
+| **🚀 Driving event** | **SampledLocation** | The event sent from the client application to update the user's location. |
+| | **RoutingStarted** | The event sent from the client application to start the user's route tracking towards a destination. |
+| | **RoutingStopped** | The event sent from the client application to stop the user's route tracking. |
+| | **SOSAlertTriggered** | The event sent from the client application to trigger an SOS alert, carrying the user's location. |
+| | **SOSAlertStopped** | The event sent from the client application to stop the SOS alert. |
+| **📥 Driven event** | **UserUpdate** | The event sent from the Location Service to notify the client application about the user's state or location update. |
+
+
 
 ## Bounded Context Integration
 
