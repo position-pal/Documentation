@@ -172,7 +172,7 @@ Moreover we distinguish between _Commands_ and _Events_ to highlight the differe
 | | **SOSAlertStopped** | The event sent from the client application to stop the SOS alert. |
 | **📥 Driven event** | **UserUpdate** | The event sent from the Location Service to notify the client application about the user's state or location update. |
 
-
+{{< /table >}}
 
 ## Bounded Context Integration
 
