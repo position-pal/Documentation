@@ -1,7 +1,8 @@
 ---
 weight: 800
 title: "Deployment"
-description: "How we deployed the system on kubernetes"
+description: "How we deployed the system on Kubernetes"
+icon: "Rocket_Launch"
 draft: false
 mermaid: true
 toc: true
@@ -16,7 +17,6 @@ In particular the system is mapped on the main abstractions tha kubernetes provi
   - **ClusterIP**: Exposes the service on a cluster-internal IP. Choosing this value makes the service only reachable from within the cluster.
   - **LoadBalancer**: Exposes the service externally using a cloud provider's load balancer.
 
-
 Kubernetes also allows to define other resources that can be used to configure data usage inside the cluster:
 
 - **PersistentVolume**: A Persistent Volume Claim (PVC) is a request for storage by a user in Kubernetes. It's similar to how a pod requests CPU and memory resources. PVCs allow users to request specific storage resources (size, access mode) without knowing the details of the underlying storage infrastructure. When a PVC is created, Kubernetes finds an available Persistent Volume (PV) that meets the requirements and binds them together. This provides applications with persistent storage that remains available even if the pod is rescheduled to a different node.
@@ -24,9 +24,11 @@ Kubernetes also allows to define other resources that can be used to configure d
 - **Secret**: A Secret is an API object used to store sensitive data, such as passwords, OAuth tokens, and SSH keys. Secrets decouple sensitive information from the pods that use it, and they can be mounted into containers as files or accessed by the Kubernetes API.
 
 ## Architecture overview
+
 Each microservice is deployed in a separate namespace inside the cluster, this allows to isolate the resources and the network traffic of each service. Each instance then exopose itself, internally, with a service of type `ClusterIP` that is used by the other services to communicate with it.
 
 The architecture of the system is shown below:
+
 ```plantuml
 @startuml deployment-architecture
 scale max 1024 width
@@ -168,16 +170,19 @@ Cluster_Boundary(cluster, "PositionPal Kubernetes Cluster") {
 }
 @enduml
 ```
+
 ## Tools used
+
 The deployment of the system involves the use of several tools that allow to automate the process of building and deploying the services.
 
 ### Helm
+
 First, all services were defined as Helm charts, providing a standardized package management solution for Kubernetes resources. Each microservice is encapsulated in its own chart, complete with templates, values files, and dependencies. This approach enables consistent deployment across environments with simple configuration changes. Helm charts facilitate version control of our infrastructure and simplify rollbacks when needed. Additionally, using Helm allows us to leverage shared libraries and reduce duplication across our Kubernetes manifests.
 
 The CI/CD processes ensures to maintain the Helm charts up-to-date with the codebase, so that the deployment process is always consistent with the latest version of the services and, also, allow to deploy the artifacts to the github container registry in order to be used by the kubernetes cluster.
 
-
 ### Terraform
+
 To automate the provisioning of the Kubernetes cluster, we used Terraform, an open-source infrastructure as code software tool that provides a consistent CLI workflow to manage cloud services. As we used DigitalOcean as our cloud provider, we leveraged on the terraform provider [plugin](https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs) for describing the infrastructure that should be created. 
 
 In the main configuration file are defined the resources that should be allocated, like the number of nodes, the type of machine, the region and the k8s version:
@@ -283,6 +288,6 @@ flowchart TD
     class rabbitmq messaging
     class notification,user_service,location_service,chat_service,prometheus services
     class Gateway entrypoint
-    
-  ```
-  After creating the infrastructure the first service to be deployed is the `rabbitmq` service, that is used as a message broker by the other services. Parallelly the monitoring part of the system is deployed, that is composed by the `prometheus` and `grafana` services. After that the other services are deployed, that are the `chat`, `notification`, `user` and `location` services. Finally the `gateway` service is deployed, that is the entrypoint of the system.
+```
+
+After creating the infrastructure the first service to be deployed is the `rabbitmq` service, that is used as a message broker by the other services. Parallelly the monitoring part of the system is deployed, that is composed by the `prometheus` and `grafana` services. After that the other services are deployed, that are the `chat`, `notification`, `user` and `location` services. Finally the `gateway` service is deployed, that is the entrypoint of the system.
