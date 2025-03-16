@@ -349,3 +349,110 @@ UC10 <-left- System
       2. The user selects the group member they want to view the path of;
       3. The user views the path of the selected group member on a map.
     - **Postcondition**: The user has viewed the path of the selected group member.
+
+
+
+### Chat management
+
+```plantuml
+@startuml chat-use-cases
+left to right direction
+
+actor "Group Member" as User
+actor "Group Owner" as Admin
+actor "System" as System
+
+rectangle "Chat sub-system" {
+    usecase "Join chat group" as UC1
+    usecase "Leave chat group" as UC2
+    usecase "Send a message" as UC3
+    usecase "Connect to a group" as UC4
+    usecase "Disconnect from a group" as UC5
+
+    usecase "Trigger notification for all group members" as UC6
+
+}
+
+User -down-> UC1
+Admin -up-> UC1
+UC6 ..> UC1 : <<extend>>
+
+User -up-> UC2
+UC6 ..> UC2 : <<extend>>
+
+User -up-> UC3
+UC3 ..> UC4 : <<include>>
+
+User -left-> UC4
+
+User -up-> UC5
+UC5 <.. UC2 : <<include>>
+
+
+System -> UC6
+
+@enduml
+```
+
+1. **Join chat group**
+
+   - **Actor**: Group Member
+   - **Description**: User joins a chat group.
+   - **Preconditions**:
+     - The user doesn't already belong to the chat group.
+   - **Main Scenario**:
+     1. An admin of the chat select the user to join the chat group;
+     2. User joins the chat.
+     3. Other clients receive an informational message that the user joined the chat group.
+   - **Postcondition**: User now belongs to the chat.
+
+2. **Leave chat group**
+
+   - **Actor**: Group Member
+   - **Description**: User leaves a chat group.
+   - **Preconditions**:
+     - The user belongs to the chat group.
+   - **Main Scenario**:
+     1. An admin of the chat select a user that should be kicked from the chat group;
+     2. User is now kicked from the chat.
+     3. Other clients receive an informational message that a user leaved the chat group.
+   - **Postcondition**: User now doesn't belongs to the chat.
+
+3. **Send a message**
+
+   - **Actor**: Group Member
+   - **Description**: User sends a message in a chat group.
+   - **Preconditions**:
+     - The user belongs to the chat group.
+     - The user is online.
+   - **Main Scenario**:
+     1. User sends a message from a client application;
+     2. The message is then propagated to the other users of the group.
+     3. Other clients of the users that belongs to the group receives the messages.
+   - **Postcondition**: A new message is registered in the chat.
+
+4. **Connect a client**
+
+   - **Actor**: Group Member
+   - **Description**: User becomes online and can receive messages.
+   - **Preconditions**:
+     - The user belongs to the chat group.
+     - The user is offline.
+   - **Main Scenario**:
+     1. User logs in to the position-pal application;
+     2. The client is registered in an online status.
+     3. Other clients receive an informational message that a user have became online.
+   - **Postcondition**: Client pass in an online status.
+
+5. **Disconnect from a group**
+
+   - **Actor**: Group Member
+   - **Description**: User becomes offline and can't receive messages.
+   - **Preconditions**:
+     - The user belongs to the chat group.
+     - The user is online.
+   - **Main Scenario**:
+     1. User disconnects from the position-pal application;
+     2. The client is registered in an offline status.
+     3. Other clients receive an informational message that a user have became offline.
+   - **Postcondition**: Client pass in an offline status.
