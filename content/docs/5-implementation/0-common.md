@@ -80,8 +80,29 @@ This modular approach helps organize the application logic into smaller, reusabl
 ...
 
 ## Shared Kernel
-**
-tecnologie
-codice
-**
-TODO - VALE
+
+The shared kernel is a foundational component of the Position Pal project that contains common domain models and their presentation capabilities. It serves as a contract between different services within the system.
+
+Its main responsibilities and features are:
+
+- **Domain Model Sharing**: It defines the core domain entities, events, and commands that are used across multiple services. This ensures consistency in how domain concepts like `User` and `Group` are represented and manipulated throughout the system.
+
+- **Cross-Boundary Communication**: By providing shared domain events and commands, it enables different services to communicate using a common language while maintaining loose coupling between components.
+
+- **Interface Serialization**: The kernel implements serialization mechanisms using Apache Avro that allow domain objects to be properly transmitted across service boundaries. Avro's schema-based approach ensures data integrity during inter-service communication while providing efficient binary serialization.
+
+  ```java
+  export interface EventSerializer {
+    serialize<T>(event: T): Uint8Array;
+    deserialize<T>(data: Uint8Array, type: new () => T): T;
+  }
+  ```
+
+- **Presentation Capabilities**: Through the kernel-presentation module, it provides standardized ways to represent domain objects in user interfaces or external APIs, maintaining consistency in how domain concepts are presented.
+
+The shared kernel is implemented as three separate packages:
+- **kernel-domain**: Contains the core domain models, events, and commands;
+- **kernel-presentation**: Houses presentation-related functionality for consistent UI representation;
+- **serialization**: Provides serialization utilities for domain objects.
+
+The shared kernel is published to GitHub Packages, allowing it to be easily included as a dependency in other components of the Position Pal ecosystem. This approach ensures that all services use exactly the same domain definitions, reducing integration issues and promoting the DRY (Don't Repeat Yourself) principle across the distributed system.
