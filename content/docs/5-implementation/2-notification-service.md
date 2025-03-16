@@ -108,8 +108,11 @@ graph LR
 
     QueuePush --> Microservice
 
-    HeadersExchange -. "x-match: all, type=email, command=UserEmailNotification" .-> QueueEmail
-    HeadersExchange -. "x-match: all, type=sms, command=UserSMSNotification" .-> QueueSMS
+    HeadersExchange -. "x-match: all, type=email, \n command=UserEmailNotification" .-> QueueEmail
+    HeadersExchange -. "x-match: all, type=sms, \n command=UserSMSNotification" .-> QueueSMS
+
+    QueueEmail .-> Microservice
+    QueueSMS .-> Microservice
 ```
 
 The fact the exchange is durable ensures that the exchange will survive a broker restart, and the messages published to it will be persisted until they are delivered to a consumer notification instance.

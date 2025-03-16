@@ -27,52 +27,57 @@ Their main responsibilities and features are:
 - **protocol translation**: for _synchronous_ remote procedure calls it is a best practice to use a ReST based API over the chosen gRPC protocol. This is because ReST APIs can be easily consumed by any client since they leverage standard HTTP methods and formats (like JSON), while gRPC APIs are more efficient but require specialized client libraries to handle Protobuf messages and HTTP/2 connections.
 - since it is the entry-point of the system it can be a single point of failure and a bottleneck. To avoid this it is implemented like a **stateless service**, so it can be easily scaled horizontally to handle more requests and to be fault-tolerant.
 
-The gateway is implemented in Javascript leveraging the Express framework.
-
 ```mermaid
-flowchart TD
+flowchart RL
     client[Client Applications] -->|HTTP/REST| gateway[API Gateway]
     
     subgraph gateway_components[API Gateway Components]
-        auth[Authentication & Authorization]
+        auth[Authentication]
+        authoriz[Authorization]
         router[Request Router]
         translator[Protocol Translator]
+        response_translator[Response Translator]
     end
     
     gateway --> auth
-    auth --> router
+    auth --> authoriz
+    authoriz --> router
     router --> translator
-    translator --> ratelimit
-    ratelimit --> logging
     
-    logging -->|REST| serviceA[Microservice A REST API]
-    logging -->|gRPC| serviceB[Microservice B RPC API]
-    logging -->|REST| serviceC[Microservice C REST API]
-    logging -->|gRPC| serviceD[Microservice D gRPC API]
+    translator -->|gRPC| serviceA[Location Service \n REST API]
+    translator -->|wss| serviceB[Location Service \n Websocket API]
+    translator -->|gRPC| serviceC[User Service \n gRPC API]
+    translator -->|gRPC| serviceD[Chat Service \n gRPC API]
+    translator -->|wss| serviceE[Chat Service \n Websocket API]
+    translator -->|gRPC| serviceF[Notification Service \n gRPC API]
+
+    
+    serviceA .-> response_translator
+    serviceB .-> response_translator
+    serviceC .-> response_translator
+    serviceD .-> response_translator
+    serviceE .-> response_translator
+    serviceF .-> response_translator
+    
+    response_translator -->|HTTP/REST| gateway
+    gateway -->|HTTP/REST| client
     
     classDef gateway fill:#f96,stroke:#333,stroke-width:2px
-    classDef service fill:#69b,stroke:#333,stroke-width:1px
     classDef client fill:#9d9,stroke:#333,stroke-width:1px
     classDef component fill:#fcf,stroke:#333,stroke-width:1px
     
     class gateway gateway
-    class serviceA,serviceB,serviceC,serviceD service
     class client client
-    class auth,router,translator,ratelimit,logging component
-    
-    %% Key characteristics
-    note1[Stateless - No Database]
-    note2[Protocol Translation REST <-> gRPC]
-    note3[Authentication & Authorization]
+    class auth,router,translator,authoriz,response_translator component
 ```
 
-**
-tecnologie
-middleware
-express
-cucumber
-**
-TODO - LUCA
+The API Gateway is implemented using **Express**, a lightweight and flexible _Node.js_ framework that simplifies the creation of web applications and APIs.
+
+In this scenario, middleware plays a crucial role in the request-response lifecycle.
+Middleware functions in Express are used to process incoming requests before they reach the core business logic and to handle responses before they are sent back to the client.
+This modular approach helps organize the application logic into smaller, reusable components that can be stacked and composed as needed.
+
+...
 
 ## Shared Kernel
 **
