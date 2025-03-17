@@ -54,6 +54,9 @@ In order to avoid overwhelming the reader with an all-encompassing but rather co
 
 #### User and Group Service
 
+The user service interacts with the Gateway, exposing an RPC-based API port allowing users to manage their account and groups.
+It has its own database for storing user and group data and interacts with the message broker to publish group events to the other services.
+
 ```plantuml
 @startuml arch-cc-user-group
 '========================== Styling =========================='
@@ -222,7 +225,63 @@ NOT_SUB_NOTIF -0)- MB_SUB_NOTIF
 
 ### Deployment View
 
-TODO
+```plantuml
+@startuml deployment-view
+actor "User" as U
+node "Client Node" as CN {
+    component "Client Application" as CA
+}
+
+
+node "Infrastructure" as INF {
+
+   
+    component "API Gateway" as AGW
+    component "Message Broker" as MB
+
+    component "Notification" as NS {
+        component "Notification Service" as NSI
+        component "Notification Database" as ND
+
+        NSI -- ND
+    }
+
+    component "User" as US {
+        component "User Service" as USI
+        component "User Database" as UD
+
+        USI -- UD
+    }
+
+    component "Location" as LS {
+        component "Location Service" as LSI
+        component "Location Database" as LD
+
+        LSI -- LD
+    }
+
+    component "Chat" as CS {
+        component "Chat Service" as CSI
+        component "Chat Database" as CD
+
+        CSI -- CD
+    }
+
+    LS .down. MB: <<message>>
+    CS .down. MB: <<message>>
+    NS .down. MB: <<message>>
+    US .down. MB: <<message>>
+
+    AGW .down. US: <<rpc>>
+    AGW .down. LS: <<rpc>>
+    AGW .down. CS: <<rpc>>
+    AGW .down. NS: <<rpc>>
+}
+
+AGW .right. CA: <<http connection>>
+U .. CA: <<client connection>>
+@enduml
+```
 
 ## Hexagonal Architecture
 
@@ -296,64 +355,5 @@ note "Two examples of adapters" as AD
 api .. AD
 mom .. AD
 
-@enduml
-```
-
-### Deployment View
-```plantuml
-@startuml deployment-view
-actor "User" as U
-node "Client Node" as CN {
-    component "Client Application" as CA
-}
-
-
-node "Infrastructure" as INF {
-
-   
-    component "API Gateway" as AGW
-    component "Message Broker" as MB
-
-    component "Notification" as NS {
-        component "Notification Service" as NSI
-        component "Notification Database" as ND
-
-        NSI -- ND
-    }
-
-    component "User" as US {
-        component "User Service" as USI
-        component "User Database" as UD
-
-        USI -- UD
-    }
-
-    component "Location" as LS {
-        component "Location Service" as LSI
-        component "Location Database" as LD
-
-        LSI -- LD
-    }
-
-    component "Chat" as CS {
-        component "Chat Service" as CSI
-        component "Chat Database" as CD
-
-        CSI -- CD
-    }
-
-    LS .down. MB: <<message>>
-    CS .down. MB: <<message>>
-    NS .down. MB: <<message>>
-    US .down. MB: <<message>>
-
-    AGW .down. US: <<rpc>>
-    AGW .down. LS: <<rpc>>
-    AGW .down. CS: <<rpc>>
-    AGW .down. NS: <<rpc>>
-}
-
-AGW .right. CA: <<http connection>>
-U .. CA: <<client connection>>
 @enduml
 ```

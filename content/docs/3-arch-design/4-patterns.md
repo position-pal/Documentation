@@ -15,14 +15,25 @@ In this page are collected the Microservice Architectural Pattern we used in the
 Each microservice's persistent data is private to that service and accessible only via its API.
 More specifically, an approach where each microservice has **its own schema** has been adopted, favoring _data isolation_, making ownership of the data clearer and ensuring the services are _loosely coupled_.
 
-### [Domain event](https://microservices.io/patterns/data/domain-event.html)
+### [Domain event](https://microservices.io/patterns/data/domain-event.html) & [CQRS](https://microservices.io/patterns/data/cqrs.html)
 
 Since the _notification_, _location_, and _chat_ microservices all require information about group members to function correctly, a query-based approach would be inefficient and would degrade system performance, especially given the need to handle high volumes of data and requests.
-To address this, the architecture is designed to be event-driven.
+To address this, the architecture is designed to be event-driven and the _Command Query Responsibility Segregation_ pattern is adopted.
+
+<!--
 The user service publishes domain events whenever a group-related action occurs, such as adding or removing a member.
 
 This approach ensures that all the services that need to know this information can subscribe to the events and update their local projections accordingly.
-As in the observer pattern, the publisher does not know who is interested in the event and, therefore, does not need to be aware of the subscribers that may change in the future (for example because of the addition of a new service) with no impact on the publisher.
+
+
+-->
+
+Every microservice that has the need to know the group members information have their own read-only 'replica' that is designed specifically to serve the queries of that service.
+The service keeps the database up to date by subscribing to Domain events published by the service that own the data, in our case the Users & Groups service.
+This pattern allows each service to support its own denormalized view of the groups data that is optimized for its specific needs, ensuring that the services are loosely coupled and that the system is scalable and performant.
+No complex and slow queries are needed to be executed on the user service to retrieve the group members information, as the data is already available in the read-only replica of the service that needs it.
+This also improves the overall system responsiveness and extensibility because, similar to the observer pattern, the publisher does not need to know who is interested in the event.
+Consequently, the publisher is not affected by changes in subscribers, such as the addition of a new service, ensuring no impact on the publisher.
 
 On the downside, this approach makes the system eventually consistent, but this is a trade-off that has been accepted in order to ensure the system's scalability and performance.
 
@@ -34,17 +45,6 @@ Whenever the state of the business entity changes a new event is appended to the
 
 This approach suits well both the location and chat services, as they need to keep track of the history of the location updates and chat messages, respectively.
 Moreover, this approach allows the system to be more resilient to failures, as the state can be reconstructed by replaying the events, and more scalable as it enables efficient distribution of workload across multiple services, reduces contention on the database by leveraging an append-only storage model, and facilitates the creation of optimized read models through event-driven processing.
-
-### [CQRS](https://microservices.io/patterns/data/cqrs.html)
-
-Since different services, other than the Users & Groups service
-requires the groups information to properly function, the _Command Query Responsibility Segregation_ pattern is adopted.
-
-Every microservice that has the need to know the group members information have their own read-only 'replica' that is designed specifically to serve the queries of that service.
-The service keeps the database up to date by subscribing to Domain events published by the service that own the data, in our case the Users & Groups service.
-This pattern allows each service to support its own denormalized view of the groups data that is optimized for its specific needs, ensuring that the services are loosely coupled and that the system is scalable and performant.
-No complex and slow queries are needed to be executed on the user service to retrieve the group members information, as the data is already available in the read-only replica of the service that needs it.
-This also improves the overall system responsiveness.
 
 ## Communication styles
 
@@ -78,4 +78,4 @@ This pattern allows each service to be deployed and scaled independently, ensuri
 
 ### [Service deployment platform](https://microservices.io/patterns/deployment/service-deployment-platform.html)
 
-TODO
+We employ automated infrastructures for application deployment, like Docker and Kubernetes that provide a platform for deploying, scaling, and managing the services in a _consistent_ and _reliable_ manner.
