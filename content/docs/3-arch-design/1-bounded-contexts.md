@@ -105,7 +105,7 @@ Moreover we distinguish between _Commands_ and _Events_ to highlight the differe
 
 {{< /table >}}
 
-### Commands 
+### Commands
 
 {{< table "table-striped" >}}
 

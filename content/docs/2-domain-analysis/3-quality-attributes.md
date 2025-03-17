@@ -92,8 +92,8 @@ Based on the above non-functional requirements, the team has identified the foll
 - **Stimulus Source**: Hardware or network error.
 - **Environment**: The system operating in normal state in a production environment.
 - **Artifact**: The service that becomes unavailable.
-- **Response**: The infrastructure of the system automatically detects the failure and tries to redirect the trafic in another replica if this is available, otherwise an error is reported to the monitoring system.
-- **Response Measure**: 
+- **Response**: The infrastructure of the system automatically detects the failure and tries to redirect the traffic in another replica if this is available, otherwise an error is reported to the monitoring system.
+- **Response Measure**:
   - ✅ **Pass Condition**: The system is able to redirect the traffic to another replica within 1 minute.
 
 #### Scalability

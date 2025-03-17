@@ -46,7 +46,6 @@ This pattern allows each service to support its own denormalized view of the gro
 No complex and slow queries are needed to be executed on the user service to retrieve the group members information, as the data is already available in the read-only replica of the service that needs it.
 This also improves the overall system responsiveness.
 
-
 ## Communication styles
 
 In accordance to the _Domain event_ pattern the interactions between the microservices are **_asynchronous_**: they exchange messages over messaging channels through a Message/Event Broker.
