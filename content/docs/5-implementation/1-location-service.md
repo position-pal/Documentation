@@ -353,12 +353,3 @@ For this purpose the [Lepus Client](https://lepus.hnaderi.dev/) library have bee
 The full implementations of these services can be found in the corresponding adapter modules of the Location Service repository:
 - [RabbitMQ adapter](https://github.com/position-pal/location-service/tree/main/messages/src/main/scala/io/github/positionpal/location/messages)
 - [gRPC adapter](https://github.com/position-pal/location-service/tree/main/grpc/src/main/scala/io/github/positionpal/location/grpc)
-
-
-## Async API Documentation
-
-The Location Service API is documented using the **AsyncAPI specification**, which provides a standardized format for defining and describing asynchronous APIs. By leveraging _AsyncAPI_, the Location Service API ensures clear communication patterns, message structures, and data formats
-
-<iframe src="https://position-pal.github.io/location-service/asyncapi/" width="100%" height="700"></iframe>
-
-[Ref: [Location Service AsyncAPI](https://position-pal.github.io/location-service/asyncapi/)].

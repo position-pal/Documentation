@@ -190,7 +190,7 @@ function authGroup(token, groupId) {
 }
 ```
 
-
+Note that the ReST API Gateway is implemented using the [Level 2 of the Richardson Maturity Model](https://martinfowler.com/articles/richardsonMaturityModel.html), **not** including the HATEOAS constraint.
 
 ## Shared Kernel
 
