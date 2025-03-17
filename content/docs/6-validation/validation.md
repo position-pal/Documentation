@@ -58,9 +58,29 @@ Leveraging testing DSLs frameworks like [Kotest](https://kotest.io) and [ScalaTe
 
 ## Integration tests
 
-Vale--
+Integration tests are used to verify that different parts of the system work together correctly. They are more complex than unit tests, as they involve multiple components and services.
 
-Requires bring up the single component to test and mock the others...
+These tests are placed in the service layer, where the business logic is implemented, and are run against the real system, including the database and external services.
+
+In some situations it was necessary to mock some services, this allowed us to create fine-grained tests that are isolated from the rest of the system, ensuring that the tests are repeatable and deterministic.
+
+For the creation of these tests, a task was set up via `gradle` to launch a docker container that dies immediately after the tests are finished.
+
+For example, launch postgres in the module reserved for storage tests:
+
+```kotlin
+normally {
+    dockerCompose {
+        startedServices = listOf("postgres")
+        isRequiredBy(tasks.test)
+    }
+} except { inCI and (onMac or onWindows) } where {
+    tasks.test { enabled = false }
+} cause "GitHub Actions runner does not support Docker Compose"
+```
+
+Note how there is a section dedicated to CI that allows testing only on linux systems, consistent with the constraints set by the GitHub actions.
+
 
 ## End-to-End tests
 
