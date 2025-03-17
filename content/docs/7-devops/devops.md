@@ -291,6 +291,7 @@ Each microservice is deployed on a Kubernetes cluster using Helm charts maintain
  
  When a pull request is opened, the pipeline automatically runs a plan to preview potential changes and adds the detailed output as a comment to the PR for thorough review by team members. Once the changes are approved and the PR is merged into the main branch, the pipeline executes applay to execute the infrastructure changes in a controlled and documented manner.
 
+![HCP](/images/HCP.png)
 
 ## License
 

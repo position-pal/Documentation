@@ -291,3 +291,39 @@ flowchart TD
 ```
 
 After creating the infrastructure the first service to be deployed is the `rabbitmq` service, that is used as a message broker by the other services. Parallelly the monitoring part of the system is deployed, that is composed by the `prometheus` and `grafana` services. After that the other services are deployed, that are the `chat`, `notification`, `user` and `location` services. Finally the `gateway` service is deployed, that is the entrypoint of the system.
+
+### k3d
+To facilitate local development and testing of the infrastructure and Kubernetes configurations, the team used [k3d](https://k3d.io/stable/), a lightweight version of K3s that runs in Docker containers. k3d allows creating and managing multi-node Kubernetes clusters locally without the need for virtual machines or dedicated hardware.
+
+This tool allowed us to:
+
+- Rapidly test the Helm configurations of our services before deploying to production
+- Verify dependencies between services and their interactions in a production-like environment
+- Quickly iterate on Kubernetes configurations without consuming cloud resources
+
+This approach allowed us to develop with confidence, significantly reducing the risk of issues during production deployment on DigitalOcean.
+
+## Observability of the system using Prometheus and Grafana
+
+To ensure high visibility into the state and performance of microservices running in the Kubernetes cluster, we implemented a comprehensive monitoring solution using Prometheus and Grafana.
+
+## Prometheus Configuration
+[Prometheus](https://prometheus.io/) is an open-source monitoring system that collects and stores metrics as time series. In our cluster, it was deployed as part of the monitoring stack with the following features:
+
+- **Service Discovery**: Configured to automatically detect services running in the cluster through the Kubernetes API
+- **Metrics Scraping**: Collects data from /metrics endpoints exposed by our microservices, kube-state-metrics, and cluster nodes
+- **Storage**: Maintains a history of metrics to facilitate trend analysis and troubleshooting
+
+## Grafana Dashboards and Visualizations
+Grafana was configured as a visualization tool for metrics collected by Prometheus. We created several dashboards to monitor different aspects of the system:
+
+- **Cluster Overview**: Visualization of the general state of the cluster, including CPU, memory, and network usage
+- **Microservices Dashboards**: Specific dashboards for each microservice showing:
+  - API latency and throughput
+  - Resource usage (CPU, memory)
+  - Error rate
+  - Custom business metrics
+- **RabbitMQ Dashboard**: Monitoring of queue status, published/consumed messages, and overall broker health
+Example of a dashboard for the location service:
+
+![HCP](/images/grafana.png)

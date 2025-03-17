@@ -8,15 +8,38 @@ toc: true
 ---
 
 ## Message Broker and RPC technologies
+Position Pal's event-based distributed system architecture relies on both synchronous and asynchronous communication between services. For asynchronous interactions, we use a message broker that decouples services and enables event-driven architectures, this handles message routing between services and ensures reliable event delivery. When synchronous communication is required we utilize Remote Procedure Call (RPC) technologies, allowing services to invoke each other's methods as if they were local functions—an approach particularly effective for request-response interactions between services.
 
-Why RabbitMQ?
-Why gRPC?
+### Message Broker
+The technology used for the message broker is [RabbitMQ](https://www.rabbitmq.com/) which is a widely adopted open-source message broker that supports multiple messaging protocols, including Advanced Message Queuing Protocol (AMQP) and Message Queuing Telemetry Transport (MQTT). RabbitMQ provides features such as message queuing, routing, and delivery guarantees, making it suitable for building scalable and reliable distributed systems.
+The main responsibilities and features are:
 
-**
-tecnologie
-tipologia
-**
-TODO - GIOVA
+- **Message Queuing**: RabbitMQ allows services to send messages to queues, which can be consumed by other services asynchronously. This decouples the sender and receiver, enabling services to communicate without being directly connected.
+- **Message Routing**: RabbitMQ supports message routing based on message attributes and routing keys, allowing messages to be selectively delivered to specific queues or exchanges.
+
+At startup each service that is interested in receiving messages from a specific queue will create a connection to the message broker and bind to the queue. When a message is published to that queue, the broker will deliver it to all bound consumers. This pattern allows services to communicate in a loosely coupled manner, enabling scalability and fault tolerance. 
+
+```mermaid
+flowchart TD
+    subgraph "Startup Phase"
+        S1[Service 1] --> |1. Create connection| MB[Message Broker]
+        S2[Service 2] --> |1. Create connection| MB
+        S1 --> |2. Bind to queue| Q[Message Queue]
+        S2 --> |2. Bind to queue| Q
+    end
+    
+    subgraph "Runtime Phase"
+        S3[Service 3] --> |1. Publish message| MB
+        MB --> |2. Route message| Q
+        Q --> |3. Deliver message| S1
+        Q --> |3. Deliver message| S2
+    end
+```
+
+### RPC Technologies
+For synchronous communication between services, we use [gRPC](https://grpc.io/), a high-performance, open-source RPC framework developed by Google. gRPC uses Protocol Buffers (Protobuf) as its interface definition language and provides features such as bi-directional streaming, authentication, and load balancing. gRPC is particularly well-suited for microservices architectures due to its efficiency and support for multiple programming languages.
+
+Every service that exposes an API will define its interface using Protobuf and generate client and server code in the desired programming language. This allows services to communicate over HTTP/2 using binary serialization, which is more efficient than text-based formats like JSON. gRPC also supports streaming and bidirectional communication, making it suitable for a wide range of use cases.
 
 ## Gateway
 
