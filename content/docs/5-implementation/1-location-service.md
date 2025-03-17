@@ -171,7 +171,105 @@ This approach follows the **CQRS** pattern and allows to separate the read and w
 
 ![Akka Projection](/images/ls-projection.svg)
 
-As data storage component, **Cassandra** has been chosen for its scalability and performance characteristics, which are well suited for the high volume of data that needs to be stored and queried.
+As data storage component, [**Apache Cassandra**](https://cassandra.apache.org/_/index.html) has been chosen for its scalability and performance characteristics, which are well suited for the high volume of data that needs to be stored and queried.
+
+A small snippet of the projection implementation is shown below, the full implementation can be found [here](https://github.com/position-pal/location-service/blob/main/tracking-actors/src/main/scala/io/github/positionpal/location/tracking/projections/UserSessionProjection.scala).
+
+```scala
+/** A projection that listens to the events emitted by the [[RealTimeUserTracker]]
+  * actors and updates the user's session state, implementing the CQRS pattern.
+  */
+object UserSessionProjection:
+
+  /** Initializes the projection for the sharded event sourced [[RealTimeUserTracker]] actor
+    * deployed on the given [[system]] using as storage the provided [[UserSessionsWriter]].
+    */
+  def init[T](system: ActorSystem[?], storage: UserSessionsWriter[IO, T]): Unit =
+    ShardedDaemonProcess(system).init(...)
+
+  private def createProjectionFor[T](
+      system: ActorSystem[?],
+      storage: UserSessionsWriter[IO, T],
+      index: Int,
+  ): AtLeastOnceProjection[Offset, EventEnvelope[RealTimeUserTracker.Event]] =
+    val tag = RealTimeUserTracker.tags(index)
+    val sourceProvider = EventSourcedProvider.eventsByTag[RealTimeUserTracker.Event](
+      system = system,
+      readJournalPluginId = CassandraReadJournal.Identifier,
+      tag = tag,
+    )
+    CassandraProjection.atLeastOnce(
+      projectionId = ProjectionId(getClass.getSimpleName, tag),
+      sourceProvider,
+      handler = () => UserSessionProjectionHandler(system, storage),
+    )
+
+/** The handler that processes the events emitted by the [[RealTimeUserTracker]] actor
+  * updating the user's session state with the provided [[storage]].
+  */
+class UserSessionProjectionHandler[T](
+    system: ActorSystem[?],
+    val storage: UserSessionsWriter[IO, T],
+) extends Handler[EventEnvelope[RealTimeUserTracker.Event]]:
+
+  import cats.effect.unsafe.implicits.global
+  import io.github.positionpal.location.domain.EventConversions.given
+  import io.github.positionpal.location.domain.Session.Snapshot
+
+  override def process(envelope: EventEnvelope[Event]): Future[Done] =
+    system.log.debug("Process envelope {}", envelope.event)
+    envelope.event match
+      case RealTimeUserTracker.StatefulDrivingEvent(state, event) =>
+        val operation = event match
+          case e: SampledLocation => storage.update(Snapshot(e.scope, state, Some(e)))
+          case e: SOSAlertTriggered => storage.update(Snapshot(e.scope, state, Some(e)))
+          case e: RoutingStarted =>
+            storage.addRoute(e.scope, e.mode, e.destination, e.expectedArrival) >>
+              storage.update(Snapshot(e.scope, state, Some(e)))
+          case e: (SOSAlertStopped | RoutingStopped) =>
+            storage.removeRoute(e.scope) >> storage.update(Snapshot(e.scope, state, None))
+          case e @ _ => storage.update(Snapshot(e.scope, state, None))
+        operation
+          .handleErrorWith(err => IO(system.log.error("Persistent projection fatal error {}", err)))
+          .map(_ => Done)
+          .unsafeToFuture()
+```
+
+For what concerns the websockets, they are programmed through the [**Akka Stream API**](https://doc.akka.io/libraries/akka-core/current/stream/index.html), which allows a powerful, reactive way to handle streaming data. 
+The Akka Stream API is composed by two main components: the `Source` and the `Sink`:
+
+- **Source**: an originator of data elements within a stream. It represents the entry point where data flows into the processing pipeline. 
+- **Sink**: represents the termination point of a stream pipeline where data elements are consumed or materialized.
+
+Akka Streams seamlessly integrates with Akka Actors: the `Source` and `Sink` can be materialized into a dedicated actor, which interacts with the stream processing pipeline to push and pull messages.
+
+```mermaid
+flowchart TB
+    client[Client]
+
+    subgraph "WebSocket Flow"
+        direction TB
+        flow[handleTrackingRoute\nFlow.fromSinkAndSource]
+
+        subgraph "Message Processing Pipeline"
+            sink[routeToGroupActor\nSink]
+            source[routeToClient\nSource]
+        end
+    end
+
+    subgraph "Actor System"
+        service[Service Layer]
+        actorSource[Actor-based Source]
+    end
+
+    client -->|"TextMessage (JSON)"| flow
+    flow --> sink
+    sink -->|"Decoded Events"| service
+    service -->|"Events"| actorSource
+    actorSource --> source
+    source -->|"TextMessage (JSON)"| flow
+    flow --> client
+```
 
 ## Location Service API
 
@@ -188,11 +286,23 @@ service UserSessionsService {
 }
 ```
 
-As you can see, we take full advantage of the gRPC streaming capabilities to allow the clients to get the most up-to-date information through a lazy stream of responses.
+[See [here](https://github.com/position-pal/location-service/blob/main/presentation/src/main/proto/tracking.proto) for the full definition]
+
+As you can see, we take full advantage of the **gRPC streaming capabilities** to allow the clients to get the most up-to-date information through a lazy stream of responses.
 This is important because the response can become quickly huge and returning it in a single response can be very inefficient and slow.
 
 One important aspect to remark and that justify the need for this service to receive groups updates through the message broker is that the service needs to know the members of the groups to provide the correct information to the clients.
 Moreover, when a user leaves a group, the service needs to be notified to stop tracking the user.
+
+For the Scala gRPC API implementation [fs2-grpc](https://github.com/typelevel/fs2-grpc) library has been chosen for its functional API and the well integration with [Cats Effect](https://typelevel.org/cats-effect/), which is the main effect system used in the Location Service.
+
+Finally, like the other services in the system, the Location Service communicates through RabbitMQ with the other services to receive the updates about the groups and the users and publish the notifications to the clients.
+For this purpose the [Lepus Client](https://lepus.hnaderi.dev/) library have been used, as it provides a high-level API to interact with RabbitMQ and it is fully integrated with the Cats Effect ecosystem.
+
+The full implementations of these services can be found in the corresponding adapter modules of the Location Service repository:
+- [RabbitMQ adapter](https://github.com/position-pal/location-service/tree/main/messages/src/main/scala/io/github/positionpal/location/messages)
+- [gRPC adapter](https://github.com/position-pal/location-service/tree/main/grpc/src/main/scala/io/github/positionpal/location/grpc)
+
 
 ## Async API Documentation
 

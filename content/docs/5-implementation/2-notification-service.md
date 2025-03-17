@@ -117,6 +117,59 @@ graph LR
 
 The fact the exchange is durable ensures that the exchange will survive a broker restart, and the messages published to it will be persisted until they are delivered to a consumer notification instance.
 
+The concrete implementation is as follows.
+As you can see, the `RabbitMQNotificationsConsumer` class is responsible for handling the incoming messages from the broker and dispatching them to the appropriate service handler based on the message type and in accordance to DDD's building blocks.
+The **Kotlin Coroutines** library is used to handle the asynchronous processing of the messages:
+
+```kotlin
+/**
+ * RabbitMQ notification commands consumer adapter.
+ */
+class RabbitMQNotificationsConsumer(
+    private val notificationPublisher: NotificationPublisher,
+    configuration: RabbitMQ.Configuration,
+    dispatcher: CoroutineDispatcher = Dispatchers.IO,
+) : RabbitMQMessageHandler(configuration) {
+
+    private val scope = CoroutineScope(SupervisorJob() + dispatcher)
+    private val serializer = AvroSerializer()
+
+    override fun RabbitMQClient.onChannelCreated(channel: Channel) {
+        // 1. Declare the headers exchange
+        channel.declareHeadersExchange(PUSH_NOTIFICATIONS_EXCHANGE)
+        // 2. Bind a queue to the exchange
+        channel.declareBindAndRegisterCallbackTo(PUSH_NOTIFICATIONS_EXCHANGE) { props, body ->
+            // 3. Attach a callback to properly handle the incoming messages
+            val messageType = props.headers["message_type"].toString()
+            when (messageType) {
+                CommandType.GROUP_WISE_NOTIFICATION.name -> handleGroupWiseNotification(body)
+                CommandType.CO_MEMBERS_NOTIFICATION.name -> handleCoMembersNotification(body)
+                else -> logger.debug("Received unknown message type: {}", messageType)
+            }
+        }
+    }
+
+    private fun handleGroupWiseNotification(body: ByteArray) = scope.launch {
+        val command = serializer.deserializeGroupWiseNotification(body)
+        logger.debug("Handling group wise notification event {}", command)
+        with(notificationPublisher) {
+            send(command.message()) toAllMembersOf command.recipient()
+        }
+    }
+
+    private fun handleCoMembersNotification(body: ByteArray) = scope.launch {
+        val command = serializer.deserializeCoMembersNotification(body)
+        logger.debug("Handling co-members notification event {}", command)
+        with(notificationPublisher) {
+            send(command.message()) toAllMembersSharingGroupWith command.sender()
+        }
+    }
+
+    internal companion object {
+        internal const val PUSH_NOTIFICATIONS_EXCHANGE = "push-notifications"
+    }
+}
+```
 
 ## Push Notifications
 
@@ -183,7 +236,9 @@ class FirebaseCloudNotificationPublisher(
         userIds.map { usersTokensRepository.get(it) }.forEach {
             it.mapCatching { userTokens ->
                 userTokens.forEach { userToken -> firebase.sendMessage(userToken.token, message) }
-            }.onFailure { err -> logger.error("Failure in sending notification {}: {}", message, err.message) }
+            }.onFailure { 
+                err -> logger.error("Failure in sending notification {}: {}", message, err.message) 
+            }
         }
 
     private companion object {
@@ -222,28 +277,16 @@ class Firebase private constructor(private val app: FirebaseMessaging) {
 
     /** A factory for creating instances of [Firebase]. */
     companion object {
-        private const val APP_ID = "notification-service"
 
         /** Creates a new instance of [Firebase] using the given [configuration]. */
-        fun create(configuration: Configuration): Result<Firebase> = runCatching {
-            val serviceAccountFilePath =
-                File(configuration.serviceAccountFilePath)
-                    .takeIf { it.exists() && it.isFile && it.extension == "json" }
-                    ?.absolutePath
-                    ?: error("${configuration.serviceAccountFilePath} is not present or is not a valid account file!")
-            val credentials = GoogleCredentials.fromStream(FileInputStream(serviceAccountFilePath))
-            val options = FirebaseOptions.builder()
-                .setCredentials(credentials)
-                .build()
-            return Result.success(Firebase(FirebaseMessaging.getInstance(FirebaseApp.initializeApp(options, APP_ID))))
-        }
+        fun create(configuration: Configuration): Result<Firebase> = runCatching { ... }
     }
 }
 ```
 
 ### API
 
-The client can register the device token obtained from FCM to the notification service through a gRPC API, whose protobuf definition is as follows:
+The client can register the device token obtained from FCM to the notification service through a gRPC API, whose Protobuf definition is as follows:
 
 ```protobuf
 service UsersTokensService {
@@ -272,3 +315,47 @@ message EmptyResponse {
     Status status = 1;
 }
 ```
+
+Its implementation is in the concrete gRPC adapter leveraging **Kotlin Coroutines**:
+
+```kotlin
+class GrpcUsersTokensService(
+    private val usersTokensService: UsersTokensService,
+) : UsersTokensServiceGrpcKt.UsersTokensServiceCoroutineImplBase() {
+
+    override suspend fun register(request: Proto.UserToken): Proto.EmptyResponse = 
+        with(request.toKt()) {
+            executeServiceCall { usersTokensService.register(userId, token) }
+        }
+
+    override suspend fun invalidate(request: Proto.UserToken): Proto.EmptyResponse = 
+        with(request.toKt()) {
+            executeServiceCall { usersTokensService.invalidate(userId, token) }
+        }
+
+    private suspend fun <T> executeServiceCall(call: suspend () -> Result<T>): Proto.EmptyResponse =
+        call().fold(
+            onFailure = { handleError(it) },
+            onSuccess = { createResponse(StatusCode.OK) },
+        )
+
+    private fun handleError(error: Throwable): Proto.EmptyResponse =
+        when (error) {
+            is Conflict -> createResponse(StatusCode.CONFLICT, error.message)
+            is NotFound -> createResponse(StatusCode.NOT_FOUND, error.message)
+            else -> createResponse(StatusCode.GENERIC_ERROR, error.message)
+        }
+
+    private fun createResponse(code: StatusCode, message: String? = null): Proto.EmptyResponse =
+        emptyResponse {
+            status = status {
+                this.code = code
+                message?.let { this.message = it }
+            }
+        }
+}
+```
+
+### Storage
+
+Similarly to the [User service](/docs/5-implementation/4-user-groupd-service/), the notification service uses a PostgreSQL database to store the user's device tokens and groups information, leveraging the [Ktor](https://ktor.io/) framework's `Exposed` library for database access.

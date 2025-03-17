@@ -1,6 +1,6 @@
 ---
 weight: 500
-title: "Implementation details for common services"
+title: "Commons implementation details"
 description: ""
 draft: false
 mermaid: true
@@ -44,7 +44,7 @@ flowchart RL
     authoriz --> router
     router --> translator
     
-    translator -->|gRPC| serviceA[Location Service \n REST API]
+    translator -->|gRPC| serviceA[Location Service \n gRPC API]
     translator -->|wss| serviceB[Location Service \n Websocket API]
     translator -->|gRPC| serviceC[User Service \n gRPC API]
     translator -->|gRPC| serviceD[Chat Service \n gRPC API]
@@ -71,13 +71,103 @@ flowchart RL
     class auth,router,translator,authoriz,response_translator component
 ```
 
-The API Gateway is implemented using **Express**, a lightweight and flexible _Node.js_ framework that simplifies the creation of web applications and APIs.
+The API Gateway is implemented using **Express**, a lightweight and flexible _Node.js_ framework that simplifies the creation of web applications and ReST APIs.
+
+An express application is built around the concept of _routes_ and _controllers_: routes define the API endpoints and delegate request processing, while controllers contain the logic for handling requests, such as forwarding them to microservices or aggregating responses.
+
+An example of a route to get all the [groups sessions]():
+
+```javascript
+const express = require("express");
+const router = express.Router();
+const sessionController = require("../controllers/session.controller");
+const { groupAuthMiddleware } = require("../middlewares/groupAuth.middleware");
+
+// Before calling the controller, the groupAuthMiddleware is executed 
+// to check if the user is authorized to access the group (see below)
+router.get("/session/:group", groupAuthMiddleware, sessionController.getCurrentSession);
+```
+
+and the corresponding controller acting as a proxy to the location service, in charge of protocol translation from gRPC to HTTP:
+
+```javascript
+const sessionClient = require("../grpc/clients/sessionClient"); // gRPC client
+
+exports.getCurrentSession = (req, res, next) => {
+  const groupId = req.params.group;
+  if (!groupId) {
+    return next(new HttpBaseError(HTTP_STATUS.BAD_REQUEST, "Bad request", "Group ID is required"));
+  }
+  let sessions = [];
+  // Actual gRPC call to the location service that returns a lazy stream of sessions for the 
+  // given group ID. This is converted to a json array and sent back to the client as a response.
+  sessionClient.getCurrentSession(
+    { value: groupId },
+    (response) => { /* on data callback */
+      const code = getHttpStatusCode(response.status.code);
+      if (code !== HTTP_STATUS.OK) {
+        return next();
+      }
+      sessions.push(response.session);
+    },
+    () => { /* on stream end callback */
+      res.locals.status = { code: "OK" };
+      res.locals.data = { sessions };
+      return next();
+    },
+    (error) => next( /* on error callback */
+      new HttpBaseError(HTTP_STATUS.GENERIC_ERROR, "Internal server error", `gRPC Error: ${error}`)
+    ),
+  );
+};
+```
 
 In this scenario, middleware plays a crucial role in the request-response lifecycle.
-Middleware functions in Express are used to process incoming requests before they reach the core business logic and to handle responses before they are sent back to the client.
+Middleware functions in Express are used to process incoming requests before they reach the core business logic (the _controller_ handler) and to handle responses before they are sent back to the client.
 This modular approach helps organize the application logic into smaller, reusable components that can be stacked and composed as needed.
 
-...
+Indeed, the steps presented in the schema above (i.e. authentication, authorization, protocol and response translation) are implemented as middleware functions in the API Gateway.
+
+For example, the middleware function that performs authorization based on the user's group membership can be seen below:
+
+```javascript
+async function groupAuthMiddleware(req, res, next) {
+  const token = req.headers.authorization || "";
+  const group = req.params.group || "";
+  if (!token || !group) {
+    return next(
+      new HttpBaseError(HTTP_STATUS.BAD_REQUEST, "Bad Request", "Token and groupId are required")
+    );
+  }
+  try {
+    const authorized = await authGroup(token.trim(), group.trim());
+    if (authorized) {
+      return next();
+    } else {
+      return next(
+        new HttpBaseError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "Unauthorized access to group")
+      );
+    }
+  } catch (error) {
+    return next(
+      new HttpBaseError(HTTP_STATUS.GENERIC_ERROR, "Internal server error", `gRPC Error: ${error}`)
+    );
+  }
+}
+
+function authGroup(token, groupId) {
+  return new Promise((resolve) => {
+    authorizeUserToAccessGroup({ token, groupId }, (err, response) => {
+      if (err) {
+        return resolve(false);
+      }
+      resolve(response?.authorized || false);
+    });
+  });
+}
+```
+
+
 
 ## Shared Kernel
 
