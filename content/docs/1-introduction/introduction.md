@@ -32,4 +32,4 @@ PositionPal transforms the ad-hoc "text when you get home" practice into a compr
 
 ## Getting Started
 
-The following sections will guide you through the setup, architecture, and usage of PositionPal, demonstrating how it can become an essential tool in your personal safety toolkit.
+The following sections will guide you through the architecture, design and implementation of PositionPal, demonstrating how it can become an essential tool in your personal safety toolkit.

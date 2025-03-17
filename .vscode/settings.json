@@ -13,6 +13,11 @@
             "language": "markdown",
             "scheme": "file",
             "pattern": "content/docs/2-domain-analysis/3-quality-attributes.md"
+        },
+        {
+            "language": "markdown",
+            "scheme": "file",
+            "pattern": "content/docs/3-arch-design/1-bounded-contexts.md"
         }
     ]
 }

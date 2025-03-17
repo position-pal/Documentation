@@ -6,8 +6,8 @@ toc: true
 ---
 
 Following the identification and definition of the quality attributes, a _**microservice architecture**_ was chosen.
-This is characterized by the decomposition of the system into a set of independent, and loosely coupled services, each of which is responsible for a specific business domain or functionality.
-Indeed, the use of this architectural style enables the continuous delivery and deployment of large, complex applications, the ability to scale horizontally with ease, the possibility to use different technologies and programming languages for each service and an increase in the overall system's maintainability.
+This is characterized by the decomposition of the system into a set of independent and loosely coupled services, each of which is responsible for a specific business domain or functionality.
+Indeed, the use of this architectural style enables the continuous delivery and deployment of large, complex applications, the ability to scale horizontally with ease, the possibility to use different technologies and programming languages for each service and an increase in the overall system maintainability.
 Moreover it allows to isolate failures and to improve the fault tolerance of the system, hence gaining in reliability.
 
 ## Microservices Decomposition
@@ -32,7 +32,7 @@ The API Gateway is responsible for routing the requests to the appropriate servi
 
 ### High-Level Overview
 
-**To address the challenges of scalability, decoupling, and real-time processing, the system's architecture was designed following an event-driven microservice approach, in which the microservices are mainly designed to _interact_ by means of event streams.**
+**To address the challenges of scalability, decoupling, and real-time processing, the system architecture was designed following an event-driven microservice approach, in which the microservices are mainly designed to _interact_ by means of event streams.**
 
 This paradigm enables **_asynchronous communication_** between the services, allowing them to be _loosely coupled_ and _independent_ from each other, hence making the system more _resilient_ and _maintainable_.
 
@@ -42,15 +42,15 @@ Nonetheless, regarding the communications between the client and the microservic
 This approach enables the client to _invoke_ remote procedures on the microservices and receive a response in a synchronous manner (e.g. for the authentication process).
 
 Lastly, each microservice follow the best practice of having **its own database**, ensuring _data isolation_ and _independence_ from other services, allowing a _loosely coupled_ architecture whose communications happen **only** through the message broker via a standard protocol.
-This has also the advantage of letting the developers change a service's schema without affecting, and thus coordinating, with other services teams.
+This has also the advantage of letting the developers change a service schema without affecting, and thus coordinating, with other services teams.
 
-Following these high-level principles, in the following sections we provide a detailed view of the system's architecture, though the three main structural views: _Components and Connectors_, _Modules_ and _Allocation_.
+Following these high-level principles, in the following sections we provide a detailed view of the system architecture, though the three main structural views: _Components and Connectors_, _Modules_ and _Allocation_.
 
 ### C&C View
 
 The following diagrams shows the _Component and Connector_ (C&C) view of the system, providing a high-level picture of the system's runtime entities in action and their boundaries.
 
-In order to avoid overwhelming the reader with an all-encompassing but rather confusing scheme, we provide below a C&C view of the system by providing, for each microservice, its relative UML diagram.
+In order to avoid overwhelming the reader with an all-encompassing but rather confusing scheme, we provide below a C&C view of the system by showing, for each microservice, its relative UML diagram.
 
 #### User and Group Service
 

@@ -5,10 +5,6 @@ description: ""
 toc: false
 ---
 
-## Glossary
-
-??
-
 ## Use cases
 
 ### Users and Groups Management
@@ -59,7 +55,7 @@ AuthUser --> UC9
    - **Preconditions**:
      - The user has not previously registered with the system.
    - **Main Scenario**:
-     1. The user provides required registration information (name, surname, email and password);
+     1. The user provides required registration information;
      2. The system validates the provided information;
      3. The system creates a new user account;
    - **Alternative Scenario**: Registration information is invalid
@@ -74,7 +70,7 @@ AuthUser --> UC9
    - **Preconditions**:
      - The user has a registered account in the system.
    - **Main Scenario**:
-     1. The user enters their credentials (email and password);
+     1. The user enters their credentials;
      2. The system validates the credentials;
      3. The system grants access to the user and creates an authenticated session.
    - **Alternative Scenario**: Invalid credentials
@@ -90,7 +86,7 @@ AuthUser --> UC9
      - The user is logged in to the system.
    - **Main Scenario**:
      1. The user accesses their profile settings;
-     2. The user modifies the desired information (name, surname and password);
+     2. The user modifies the desired information;
      3. The user confirms the changes;
      4. The system validates and saves the updated information.
    - **Alternative Scenario**: Invalid information
@@ -120,7 +116,7 @@ AuthUser --> UC9
      - The user is logged in to the system.
    - **Main Scenario**:
      1. The user selects the option to create a new group;
-     2. The user provides the group name;
+     2. The user provides a group name;
      3. The system creates the new group with the user as the initial member;
      4. The system confirms the successful creation of the group.
    - **Postcondition**: A new group exists in the system with the user as a member.
@@ -343,14 +339,12 @@ UC10 <-left- System
     - **Actor**: Group member
     - **Description**: The user views the path of a group member on a journey or in SOS mode.
     - **Preconditions**:
-      - The user is logged and is part of the group they want to view the path of a group member;
+      - The user is logged and is part of the group they want to view the path of a tracked group member;
     - **Main Scenario**:
       1. The user selects the group they want to view the path of a group member;
       2. The user selects the group member they want to view the path of;
       3. The user views the path of the selected group member on a map.
     - **Postcondition**: The user has viewed the path of the selected group member.
-
-
 
 ### Chat management
 
@@ -359,7 +353,6 @@ UC10 <-left- System
 left to right direction
 
 actor "Group Member" as User
-actor "Group Owner" as Admin
 actor "System" as System
 
 rectangle "Chat sub-system" {
@@ -374,7 +367,6 @@ rectangle "Chat sub-system" {
 }
 
 User -down-> UC1
-Admin -up-> UC1
 UC6 ..> UC1 : <<extend>>
 
 User -up-> UC2
@@ -401,9 +393,9 @@ System -> UC6
    - **Preconditions**:
      - The user doesn't already belong to the chat group.
    - **Main Scenario**:
-     1. An admin of the chat select the user to join the chat group;
-     2. User joins the chat.
-     3. Other clients receive an informational message that the user joined the chat group.
+     1. A chat participant selects the user to join the chat group;
+     2. User joins the chat;
+     3. Other clients receive an information message that the user joined the chat group.
    - **Postcondition**: User now belongs to the chat.
 
 2. **Leave chat group**
@@ -413,9 +405,9 @@ System -> UC6
    - **Preconditions**:
      - The user belongs to the chat group.
    - **Main Scenario**:
-     1. An admin of the chat select a user that should be kicked from the chat group;
-     2. User is now kicked from the chat.
-     3. Other clients receive an informational message that a user leaved the chat group.
+     1. A chat participant selects a user that should be kicked from the chat group;
+     2. User is now kicked from the chat;
+     3. Other clients receive an information message that a user leaved the chat group.
    - **Postcondition**: User now doesn't belongs to the chat.
 
 3. **Send a message**
@@ -423,25 +415,25 @@ System -> UC6
    - **Actor**: Group Member
    - **Description**: User sends a message in a chat group.
    - **Preconditions**:
-     - The user belongs to the chat group.
+     - The user belongs to the chat group;
      - The user is online.
    - **Main Scenario**:
      1. User sends a message from a client application;
-     2. The message is then propagated to the other users of the group.
+     2. The message is then propagated to the other users of the group;
      3. Other clients of the users that belongs to the group receives the messages.
-   - **Postcondition**: A new message is registered in the chat.
+   - **Postcondition**: A new message is sent in the chat.
 
 4. **Connect a client**
 
    - **Actor**: Group Member
    - **Description**: User becomes online and can receive messages.
    - **Preconditions**:
-     - The user belongs to the chat group.
+     - The user belongs to the chat group;
      - The user is offline.
    - **Main Scenario**:
      1. User logs in to the position-pal application;
-     2. The client is registered in an online status.
-     3. Other clients receive an informational message that a user have became online.
+     2. The client is registered in an online status;
+     3. Other clients receive an information message that a user have became online.
    - **Postcondition**: Client pass in an online status.
 
 5. **Disconnect from a group**
@@ -449,10 +441,10 @@ System -> UC6
    - **Actor**: Group Member
    - **Description**: User becomes offline and can't receive messages.
    - **Preconditions**:
-     - The user belongs to the chat group.
+     - The user belongs to the chat group;
      - The user is online.
    - **Main Scenario**:
      1. User disconnects from the position-pal application;
-     2. The client is registered in an offline status.
-     3. Other clients receive an informational message that a user have became offline.
+     2. The client is registered in an offline status;
+     3. Other clients receive an information message that a user have became offline.
    - **Postcondition**: Client pass in an offline status.

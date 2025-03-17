@@ -12,12 +12,12 @@ These attributes play a crucial role in shaping the system architecture, as they
 In the context of this project have been identified the following quality attributes that are considered essential for the success of system, divided into "Runtime" and "Development Time" categories:
 
 - **Runtime**
-  - the system should be highly **available** and **reliable** to ensure users can access it when needed
-  - the system should be **scalable** to handle a growing number of users and data
-  - the system should be **performant** to provide a responsive user experience and minimize latency in critical operations
+  - the system should be highly **available** and **reliable** to ensure users can access it when needed;
+  - the system should be **scalable** to handle a growing number of users and data;
+  - the system should be **performant** to provide a responsive user experience and minimize latency in critical operations;
   - the system should be **secure** to protect users' data and privacy
-  - the system should be **observable** to allow monitoring and troubleshooting of its components in real-time
-  - the client application should be **user-friendly** to provide an intuitive and accessible interface for users to interact with the system
+  - the system should be **observable** to allow monitoring and troubleshooting of its components in real-time;
+  - the client application should be **user-friendly** to provide an intuitive and accessible interface for users to interact with the system.
 - **Development Time**
   - the system should be **testable** to ensure the correctness of its behavior and facilitate maintenance over time;
   - the system should be **modular** to allow independent development and streamlined deployment of its components;
@@ -49,7 +49,7 @@ Based on the above non-functional requirements, the team has identified the foll
 - **Artifact**: The specific service processing the request.
 - **Response**: The system processes the request and returns the results efficiently.
 - **Response Measure**:
-  - ✅ Pass Condition: 95 % of requests are under 1000ms and that 99% of requests are under 1500ms and the rate of requests failing is less than 0.05.
+  - ✅ Pass Condition: 95 % of requests are under 1000ms and that 99% of requests are under 1500ms and the rate of requests failing is less than 0.05;
   - ✅ Pass Condition: Resource utilization (CPU, memory) remains below 80% during peak load periods.
 
 #### User friendliness
@@ -60,20 +60,20 @@ Based on the above non-functional requirements, the team has identified the foll
 - **Artifact**: Client application user interface.
 - **Response**: The user is able to complete the workflow without external assistance.
 - **Response Measure**:
-  - ✅ Pass Condition: 85% of new users complete core workflows successfully on first attempt without requiring help documentation.
+  - ✅ Pass Condition: 85% of new users complete core workflows successfully on first attempt without requiring help documentation;
   - ✅ Pass Condition: UI responds to user interactions within 300ms to maintain the perception of immediate feedback.
 
 #### Observability
 
-- **Stimulus**: On or more services in the system is not responding as expected.
-- **Stimulus Source**: Monitoring service detect and report the anomaly.
+- **Stimulus**: One or more services in the system is not responding as expected.
+- **Stimulus Source**: Monitoring service detects and report the anomaly.
 - **Environment**: The system operating in normal state in a production environment.
 - **Artifact**: The monitoring service.
 - **Response**: The monitoring service logs the anomaly and sends an alert to the system administrator.
 - **Response Measure**: 
-  - ✅ **Pass Condition**: The system administrator receives the alert in less than 1 minute.
-  - ✅ **Pass Condition**: The alert contains the service name, the error message, and the timestamp of the anomaly.
-  - ✅ **Pass Condition**: The alert is sent to the system administrator via email, a messaging service, or a dedicated monitoring platform.
+  - ✅ **Pass Condition**: The system administrator receives the alert in less than 1 minute;
+  - ✅ **Pass Condition**: The alert contains the service name, the error message, and the timestamp of the anomaly;
+  - ✅ **Pass Condition**: The alert is sent to the system administrator via email, a messaging service, or a dedicated monitoring platform;
   - ✅ **Pass Condition**: The alert is logged in the monitoring system for future reference.
 
 #### Reliability
@@ -88,7 +88,7 @@ Based on the above non-functional requirements, the team has identified the foll
 
 #### Availability
 
-- **Stimulus**: Due an internal error occurs, a service becomes unavailable.
+- **Stimulus**: Due an internal error a service becomes unavailable.
 - **Stimulus Source**: Hardware or network error.
 - **Environment**: The system operating in normal state in a production environment.
 - **Artifact**: The service that becomes unavailable.
@@ -104,31 +104,31 @@ Based on the above non-functional requirements, the team has identified the foll
 - **Artifact**: Services of the system with huge amount of requests registered.
 - **Response**: The infrastructure that hosts the system will automatically create new replicas of the services that are under high load, and will redirect the traffic to the new replicas.
 - **Response Measure**:
-  - ✅ **Pass Condition**: System is able to serve all the requests with a response time of less than 3.5 second on the 98% of the requests.
+  - ✅ **Pass Condition**: System is able to serve all the requests with a response time of less than 3 seconds on the 98% of the requests.
 
 ### Development Time
 
 #### Testability
 
-- **Source**: Developer
-- **Stimulus**: A new code change is submitted to the version control system
-- **Environment**: In a controlled CI/CD pipeline with automated testing tools and environments set up
-- **Artifact**: System modules and components
-- **Response**: The system triggers all the automated test suite, comprising unit, integration, and end-to-end tests, to verify the correctness of the changes
+- **Source**: Developer.
+- **Stimulus**: A new code change is submitted to the version control system.
+- **Environment**: In a controlled CI/CD pipeline with automated testing tools and environments set up.
+- **Artifact**: System modules and components.
+- **Response**: The system triggers all the automated test suite, comprising unit, integration, and end-to-end tests, to verify the correctness of the changes.
 - **Response Measure**:
-  - ✅ **Pass Condition**: All tests pass successfully withing 15 minutes
-  - ✅ **Pass Condition**: The test report must clearly indicate the tests report and any failed tests, including module name, error details and stack trace
+  - ✅ **Pass Condition**: All tests pass successfully withing 15 minutes;
+  - ✅ **Pass Condition**: The test report must clearly indicate the tests report and any failed tests, including module name, error details and stack trace.
 
 #### Modularity
 
-- **Source**: Development team
+- **Source**: Development team.
 - **Stimulus**: A request is made to update, fix, or replace an existing module or component due to a bug fix, performance improvement, or internal refactoring.
-- **Environment**: The system is operational and new code changes are being developed and tested in a controlled environment with all modules integrated
-- **Artifact**: The specific component or module targeted for update or replacement
+- **Environment**: The system is operational and new code changes are being developed and tested in a controlled environment with all modules integrated.
+- **Artifact**: The specific component or module targeted for update or replacement.
 - **Response**: The requested module can be replaced or updated independently, using only its exposed APIs, without modifying or recompiling other modules.
 - **Response Measure**:
-  - ✅ **Pass Condition**: Integration of the updated or new module must not require changes to other modules.
-  - ✅ **Pass Condition**: Integration testing must be completed within 20% of the original development effort for the module.
+  - ✅ **Pass Condition**: Integration of the updated or new module must not require changes to other modules;
+  - ✅ **Pass Condition**: Integration testing must be completed within 20% of the original development effort for the module;
   - ✅ **Pass Condition**: All tests for unchanged modules must pass after integration.
 
 #### Extensibility
@@ -139,16 +139,16 @@ Based on the above non-functional requirements, the team has identified the foll
 - **Artifact**: New module or service to be integrated, extension points, and system interfaces.
 - **Response**: The new feature must be implemented as a separate module using a clear and well-defined API, minimizing changes to existing code. The integration should not impact the performance or functionality of existing modules.
 - **Response Measure**:
-  - ✅ **Pass Condition**: No more than 10% of the existing code can be modified to support the new module.
-  - ✅ **Pass Condition**: The new module must pass all tests independently before integration.
+  - ✅ **Pass Condition**: No more than 10% of the existing code can be modified to support the new module;
+  - ✅ **Pass Condition**: The new module must pass all tests independently before integration;
   - ✅ **Pass Condition**: Integration must not degrade existing system performance by more than 5%.
 
 #### Maintainability
 
-- **Source**: Development team
+- **Source**: Development team.
 - **Stimulus**: A bug is reported in a deployed module.
 - **Environment**: In a controlled development environment with access to the source code, bug tracking system, and deployment tools.
-- **Artifact**: System logs, bug report, and source code repository
-- ***Response***: The development team isolates the issue, applies a fix, and deploys it without affecting other modules.
+- **Artifact**: System logs, bug report, and source code repository.
+- **Response**: The development team isolates the issue, applies a fix, and deploys it without affecting other modules.
 - **Response Measure**:
   - ✅ **Pass Condition**: No new regression failures are detected in automated tests post-deployment.

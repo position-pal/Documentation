@@ -14,8 +14,8 @@ In this section are collected the **functional requirements** of the system in t
 <em>
 
 1. As a new user \
-   I want to register with the system using my details \
-   So that I can access the application's features
+   I want to register with the system using my information \
+   So that I can access the application features
 
 2. As a registered user \
    I want to log in with my credentials \
@@ -23,7 +23,7 @@ In this section are collected the **functional requirements** of the system in t
 
 3. As a logged user \
    I want to update my profile information \
-   So that I can keep my personal details current
+   So that I can keep up-to-date my personal details
 
 4. As a logged user \
    I want to delete my profile \
@@ -58,19 +58,19 @@ In this section are collected the **functional requirements** of the system in t
 <em>
 
 1. As a logged user \
-   I want to be able to start sharing my location with other groups' member \
+   I want to be able to start sharing my location with other group member \
    So that I'm able to be monitored
 
 2. As a logged user who is sharing their position with a set of groups \
-   I want to be able to stop sharing it with a group's members \
+   I want to be able to stop sharing it with group members \
    So that I can go where I want without letting know those member
 
 3. As a logged user \
-   I want to be able to receive location updates from my groups' members who are sharing their location \
+   I want to be able to receive location updates from my group members who are sharing their location \
    So that I can view their live location on a map in real-time
 
 4. As a logged user \
-   I want to be able to get the last known location and state of my groups' member \
+   I want to be able to get the last known location and state of my group members \
    So that I can see their last reported location and status when live sharing is unavailable
 
 5. As a logged user \
@@ -78,39 +78,35 @@ In this section are collected the **functional requirements** of the system in t
    So that if I am in a dangerous situation my friends are notified and knows where I am
 
 6. As a logged user \
-   I want to start sharing my location to all groups' members after the trigger of an SOS alert \
+   I want to start sharing my location to all group members after the trigger of an SOS alert \
    So that my live location is automatically shared after an SOS alert to aid responders
 
 7. As a logged user who is sharing their position \
    I want to be able to share a journey towards a location specifying the time by which I'll be there \
    So that my friends know where I'm going
 
-8. As a logged user who is sharing a journey \
-   I want to be able to trigger an SOS alert \
-   So that if I am in a dangerous situation my friends are notified
-
-9. As a logged user in SOS mode \
+8. As a logged user in SOS mode \
    I want to be able to stop the SOS \
-   So that my friend are notified I'm not anymore in danger
+   So that my friend are notified I'm not in danger anymore
 
-10. As a logged user who is sharing a journey \
-    I want to be able to stop it prematurely \
-    So that my friend knows a change in my plan have occurred
+9. As a logged user who is sharing a journey \
+   I want to be able to stop it prematurely \
+   So that my friend knows a change in my plan have occurred
+
+10. As a logged user \
+    I want to be able to see the entire path taken by my group members who are sharing a journey or triggered an SOS alert \
+    So that I know where they have been during the dangerous situation
 
 11. As a logged user \
-    I want to be able to see the entire path taken by my groups' members who are sharing a journey or triggered an SOS alert \
-    So that I know where they have been during the dangerous situation 
-
-12. As a logged user \
-    I want to be able to receive a notification when one of my groups' member start a journey or trigger an SOS alert \
+    I want to be able to receive a notification when one of my group members start a journey or trigger an SOS alert \
     So that I'm aware of it
 
-13. As a logged user \
-    I want to be able to receive a notification if one my groups' member who triggered an SOS alert goes offline or deactivate it \
+12. As a logged user \
+    I want to be able to receive a notification if one of my group members who triggered an SOS alert goes offline or deactivate it \
     So that I can take appropriate action
 
-14. As a logged user \
-    I want to be able to receive a notification if one my groups' member who started a journey stops moving, doesn't arrive on time, goes offline, reaches their destination or deactivate it \
+13. As a logged user \
+    I want to be able to receive a notification if one of my group members who started a journey stops moving, doesn't arrive on time, goes offline, reaches their destination or deactivate it \
     So that I can take appropriate action
 
 </em>
@@ -119,24 +115,25 @@ In this section are collected the **functional requirements** of the system in t
 
 <em>
 
-   1. As a logged user \
-      I want to connecto to a group \
-      So that I can communicate with other group members
+1. As a logged user \
+   I want to connect to a group \
+   So that I can communicate with other group members
 
-   2. As a group member \
-      I want to send a message to the group \
-      So that I can communicate with other group members
-   
-   3. As a group member \
-      I want to disconnect from the group \
-      So that I can no longer communicate with other group members
+2. As a group member \
+   I want to send a message to the group \
+   So that I can communicate with other group members
+
+3. As a group member \
+   I want to disconnect from the group \
+   So that I can no longer communicate with other group members
+
 </em>
 
 ## Acceptance tests
 
 Following BDD principles, starting from the above user stories, a set of acceptance test specifications have been defined.
 These specifications are written in Gherkin using [Cucumber](https://cucumber.io), providing a structured and human-readable format that facilitates communication between stakeholders, even for those who have not a technical background.
-Moreover, they serve end-to-end tests, ensuring that the system meets the defined requirements while aligning with end users' expectations and needs (see the [Validation section](/docs/6-validation/validation/) for more details about tests).
+Moreover, they serve end-to-end tests, ensuring that the system meets the defined requirements while aligning with end final users' expectations and needs (see the [Validation section](/docs/6-validation/validation/) for more details about tests).
 By leveraging this approach, the tests remain clear, maintainable, and closely tied to business objectives.
 
 ### User Management
