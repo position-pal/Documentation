@@ -72,13 +72,13 @@ featureGrid:
       icon: domain
       description: Designed following Domain-Driven Design principles.
     - title: DevOps practices
-      icon: 
+      icon: handyman
       description: Implemented using DevOps practices - build automation, CI/CD pipelines
     - title: Open Source
-      icon: 
+      icon: workspace_premium
       description: Open Source project licensed under Apache-2.0.
     - title: Event-Driven Architecture
-      icon: 
+      icon: architecture
       description: Built using Event-Driven Architecture principles.
     - title: Kubernetes
       icon: rocket_launch
