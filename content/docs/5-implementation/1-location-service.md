@@ -212,10 +212,6 @@ class UserSessionProjectionHandler[T](
     val storage: UserSessionsWriter[IO, T],
 ) extends Handler[EventEnvelope[RealTimeUserTracker.Event]]:
 
-  import cats.effect.unsafe.implicits.global
-  import io.github.positionpal.location.domain.EventConversions.given
-  import io.github.positionpal.location.domain.Session.Snapshot
-
   override def process(envelope: EventEnvelope[Event]): Future[Done] =
     system.log.debug("Process envelope {}", envelope.event)
     envelope.event match
@@ -235,40 +231,95 @@ class UserSessionProjectionHandler[T](
           .unsafeToFuture()
 ```
 
-For what concerns the websockets, they are programmed through the [**Akka Stream API**](https://doc.akka.io/libraries/akka-core/current/stream/index.html), which allows a powerful, reactive way to handle streaming data. 
+For what concerns the websockets, they are programmed through the [**Akka Stream API**](https://doc.akka.io/libraries/akka-core/current/stream/index.html), which allows a powerful, reactive way to handle streaming data with a backpressure mechanism that ensures the system's stability and efficiency.
+
 The Akka Stream API is composed by two main components: the `Source` and the `Sink`:
 
 - **Source**: an originator of data elements within a stream. It represents the entry point where data flows into the processing pipeline. 
 - **Sink**: represents the termination point of a stream pipeline where data elements are consumed or materialized.
+- **Flow**: a processing stage that can both receive and emit data elements.
 
 Akka Streams seamlessly integrates with Akka Actors: the `Source` and `Sink` can be materialized into a dedicated actor, which interacts with the stream processing pipeline to push and pull messages.
 
-```mermaid
-flowchart TB
-    client[Client]
+The overall pipeline is describe in the following diagram: it uses a bidirectional flow composed of a Sink and a Source to handle Websockets communications where each message flows to the real-time actor-based tracking service through the Sink and this, in turn, sends the updates to the clients through the Websocket handler Actor Source.
 
-    subgraph "WebSocket Flow"
+```mermaid
+flowchart BT
+    client[Client] 
+    
+    subgraph "WebSocket Flow" 
         direction TB
         flow[handleTrackingRoute\nFlow.fromSinkAndSource]
-
+        
         subgraph "Message Processing Pipeline"
-            sink[routeToGroupActor\nSink]
-            source[routeToClient\nSource]
+            direction LR
+            sink[routeToGroupActor Sink]
+            source[routeToClient Source]
         end
     end
-
+    
     subgraph "Actor System"
-        service[Service Layer]
-        actorSource[Actor-based Source]
+        service[ActorBasedRealTimeTracking.Service]
+        actorSource[Websocket handler Actor Source]
     end
-
-    client -->|"TextMessage (JSON)"| flow
+    
+    client -->|"ClientDrivingEvent (JSON)"| flow
     flow --> sink
     sink -->|"Decoded Events"| service
-    service -->|"Events"| actorSource
+    
+    service -->|"Driven Events"| actorSource
     actorSource --> source
     source -->|"TextMessage (JSON)"| flow
     flow --> client
+```
+
+```scala
+class V1RoutesHandler(service: ActorBasedRealTimeTracking.Service[IO, Scope])(
+  using actorSystem: ActorSystem[?]
+) extends RoutesHandler[[T] =>> Flow[Message, Message, T]] with ModelCodecs:
+
+  override def handleTrackingRoute(userId: UserId, groupId: GroupId): Flow[Message, Message, _] =
+    val scope = Scope(userId, groupId)
+    Flow.fromSinkAndSource(routeToGroupActor(scope), routeToClient(scope))
+
+  private def routeToGroupActor(scope: Scope): Sink[Message, Unit] =
+    Flow[Message]
+      .map: // 1. Converts the incoming message to a ClientDrivingEvent or discards it
+        case TextMessage.Strict(msg) => Json.decode(msg.getBytes).to[ClientDrivingEvent].valueEither
+        case t => Left(s"Unsupported message type $t")
+      .log("Websocket message from client to tracker")
+      .withAttributes(attributes)
+      .collect { case Right(e) => e }
+      .watchTermination(): (_, done) =>
+        done.onComplete: _ =>
+          // 2. Removes the connection from the connections manager
+          val oldConnections = ConnectionsManager.removeConnection(scope.groupId, scope.userId)
+          val wsClientActorRef = oldConnections.find(_._1 == scope.userId).map(_._2)
+          wsClientActorRef.foreach: ref =>
+            service.removeObserverFor(scope)(Set(ref)).unsafeRunSync()
+      .to:
+        // 4. Forwards the incoming message to the real-time tracking service
+        Sink.foreach(service.handle(scope)(_).unsafeRunSync())
+
+  private def routeToClient(scope: Scope): Source[Message, ActorRef[DrivenEvent]] =
+    ActorSource
+      .actorRef(
+        completionMatcher = { case Complete => },
+        failureMatcher = { case ex: Throwable => ex },
+        bufferSize = 1_000,
+        overflowStrategy = OverflowStrategy.dropHead,
+      )
+      .mapMaterializedValue: ref =>
+        // 3. Adds the connection to the connections manager and register this handler as observer
+        ConnectionsManager.addConnection(scope.groupId, scope.userId, ref)
+        service.addObserverFor(scope)(Set(ref)).unsafeRunSync()
+        ref
+      .log("Websocket message from tracker to client")
+      .withAttributes(attributes)
+      .map:
+        // 5. Sends back the response to the client
+        case event: DrivenEvent => TextMessage(Json.encode(event).toUtf8String)
+
 ```
 
 ## Location Service API
