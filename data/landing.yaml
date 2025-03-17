@@ -29,7 +29,7 @@ hero:
     path: "images/logos"
     filename: "default-logo.png"
     alt: "Lotus Docs Logo"
-    height: 90px
+    height: 150px
   title: PositionPal
   subtitle: App for creating **trusted groups** to **share locations** and **alert** emergencies, fostering a _fast support network_.
   image:
