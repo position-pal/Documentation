@@ -19,8 +19,8 @@ Following the _decompose by subdomain strategy_ the following microservices have
 - **Notification Service**: responsible for managing the notifications;
 - **Chat Service**: responsible for managing the chat messages.
 
-Both the Groups and User bounded contexts have been consolidated within the user service due to their strong interrelation and need for frequent, seamless interaction.
-Separating them into distinct microservices would compromise data consistency and introduce unacceptable levels of latency, making this integration a more efficient and reliable solution.
+Both the Groups and User bounded contexts have been aggregated within the user service due to their strong interrelation and need for frequent, seamless interaction.
+Separating them into distinct microservices would compromise data consistency and introduce unacceptable levels of latency; merging together the bounded contexts make the integration more efficient and reliable.
 Indeed, while it's common to map a bounded context to a single microservice, this isn't always the case [^1].
 
 [^1]: [How to define subdomains](https://microservices.io/post/architecture/2023/08/14/assemblage-overview-part-2-defining-subdomains.html#a-microservice-is-a-collection-of-subdomains)
@@ -94,7 +94,7 @@ USR_PUB -(0- MB_PUB_GROUP : <<publish>>
 #### Location Service
 
 The Location Service interacts with the Gateway, exposing two different API ports: one for real-time tracking via a real-time connector, allowing users to be tracked, and another for accessing tracking service information through an RPC connector.
-Like, any other microservice, it has its own database for storing the tracking data, and it interacts with the message broker to publish notifications and subscribe to group events.
+Like any other microservice, it has its own database for storing the tracking data, and it interacts with the message broker to publish notifications and subscribe to group events.
 
 ```plantuml
 @startuml arch-cc-location

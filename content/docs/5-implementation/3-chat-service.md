@@ -17,7 +17,7 @@ To further enhance scalability, we implemented the whole system using Akka Clust
 
 ### Clean Architecture Implementation
 
-For the Chat Service implementation, we adopted a **Clean Architecture** approach with clearly separated layers. This architectural choice provides significant benefits for a service responsible for sensitive user data:
+We adopted a **Clean Architecture** approach with clearly separated layers. This architectural choice provides significant benefits for a service responsible for sensitive user data:
 
 ```plaintext
 chat-service/
@@ -33,8 +33,7 @@ chat-service/
 └── entrypoint/     # Application bootstrap
 ```
 
-Each layer has a specific responsibility, with dependencies pointing inward toward the domain layer. This approach allows us to isolate the core business logic from implementation details.
-
+Each layer has a specific responsibility with dependencies pointing inward toward the domain layer. This approach allows us to isolate the core business logic from implementation details.
 
 ## Chat Management
 

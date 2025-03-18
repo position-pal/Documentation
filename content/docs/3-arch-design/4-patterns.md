@@ -17,7 +17,7 @@ More specifically, an approach where each microservice has **its own schema** ha
 
 ### [Domain event](https://microservices.io/patterns/data/domain-event.html) & [CQRS](https://microservices.io/patterns/data/cqrs.html)
 
-Since the _notification_, _location_, and _chat_ microservices all require information about group members to function correctly, a query-based approach would be inefficient and would degrade system performance, especially given the need to handle high volumes of data and requests.
+Since the _notification_, _location_, and _chat_ microservices all require information about group members to function correctly, a query-based approach to the user service would be inefficient and would degrade system performance, especially given the need to handle high volumes of data and requests.
 To address this, the architecture is designed to be event-driven and the _Command Query Responsibility Segregation_ pattern is adopted.
 
 <!--
@@ -43,7 +43,7 @@ This patterns consists of persisting the state of a business entity such as a se
 Whenever the state of the business entity changes a new event is appended to the list of events, making it possible for the application to reconstruct the entity's state by replaying the events.
 
 This approach suits well both the location and chat services, as they need to keep track of the history of the location updates and chat messages, respectively.
-Moreover, this approach allows the system to be more resilient to failures, as the state can be reconstructed by replaying the events, and more scalable as it enables efficient distribution of workload across multiple services, reduces contention on the database by leveraging an append-only storage model, and facilitates the creation of optimized read models through event-driven processing.
+Moreover, this approach allows the system to be more resilient to failures, as the state can be reconstructed by replaying the events, more scalable, as it enables efficient distribution of workload across multiple services, reduces contention on the database by leveraging an append-only storage model and facilitates the creation of optimized read models through event-driven processing.
 
 ## Communication styles
 

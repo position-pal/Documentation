@@ -15,7 +15,7 @@ In the context of this project have been identified the following quality attrib
   - the system should be highly **available** and **reliable** to ensure users can access it when needed;
   - the system should be **scalable** to handle a growing number of users and data;
   - the system should be **performant** to provide a responsive user experience and minimize latency in critical operations;
-  - the system should be **secure** to protect users' data and privacy
+  - the system should be **secure** to protect users' data and privacy;
   - the system should be **observable** to allow monitoring and troubleshooting of its components in real-time;
   - the client application should be **user-friendly** to provide an intuitive and accessible interface for users to interact with the system.
 - **Development Time**

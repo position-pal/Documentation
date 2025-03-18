@@ -30,7 +30,7 @@ The critical challenge is balancing security with performance while maintaining 
 
 ### Clean Architecture Implementation
 
-For the User Service implementation, we adopted a **Clean Architecture** approach with clearly separated layers. This architectural choice provides significant benefits for a service responsible for sensitive user data:
+We adopted a **Clean Architecture** with clearly separated layers. This architectural choice provides significant benefits for a service responsible for sensitive user data:
 
 ```plaintext
 user-service/
@@ -43,7 +43,7 @@ user-service/
 └── entrypoint/     # Application bootstrap
 ```
 
-Each layer has a specific responsibility and communicates only with upper layers, with dependencies pointing inward toward the domain layer. This approach allows us to isolate the core business logic from implementation details.
+Each layer has a specific responsibility with dependencies pointing inward toward the domain layer. This approach allows us to isolate the core business logic from implementation details.
 
 The domain layer contains pure business entities and rules, uncontaminated by external frameworks or technologies. For example, the `User` entity contains only the essential properties and validation rules:
 
@@ -207,7 +207,7 @@ This adapter implementation allows us to keep the service interface stable while
 
 ## Event-Driven Communication with RabbitMQ
 
-For asynchronous communication scenarios, such as notifying other services when users are created or updated, we implemented an event-driven approach using **RabbitMQ** with the **Observer Pattern**.
+For asynchronous communication scenarios, such as notifying other services when users are created or updated, we implemented an event-driven approach using **RabbitMQ**.
 
 The User Service publishes domain events when user-related actions occur, such as member join group or group creation. Other services can subscribe to these events and update their local projections accordingly.
 
@@ -230,7 +230,6 @@ enum class EventType {
 ```
 
 Each event type corresponds to a significant domain event within our Group Service. When a group is created, members are added or removed, or a group is deleted, we publish an event to notify other services that might need to react to these changes.
-
 
 ## Data Persistence with Repository Pattern
 

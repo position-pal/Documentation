@@ -285,11 +285,11 @@ flowchart BT
     
     client -->|"ClientDrivingEvent (JSON)"| flow
     flow --> sink
-    sink -->|"Decoded Events"| service
+    sink -->|"Decoded Driving Events"| service
     
     service -->|"Driven Events"| actorSource
     actorSource --> source
-    source -->|"TextMessage (JSON)"| flow
+    source -->|"DrivenEvent (JSON)"| flow
     flow --> client
 ```
 

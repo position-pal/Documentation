@@ -50,8 +50,8 @@ package domain {
     Group --> "0..*" User
   }
 
-  membership *-down-> "1" UserId
-  membership *-down-> "1" GroupId
+  Membership *-down-> "1" UserId
+  Membership *-down-> "1" GroupId
 }
 @enduml
 ```

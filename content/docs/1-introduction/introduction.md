@@ -23,12 +23,12 @@ Personal safety concerns are increasingly significant in urban environments, esp
 
 PositionPal transforms the ad-hoc "text when you get home" practice into a comprehensive safety system with features specifically designed for personal security:
 
-- **Trusted Groups**: Create circles of trusted friends, family members, or colleagues
-- **Real-time Location Sharing**: Share your precise location with selected groups
-- **Route Tracking**: Set expected routes and arrival times
-- **Automated Alerts**: Generate notifications when deviating from planned routes or not reaching destinations on time
-- **Emergency Notifications**: Quick access to alert trusted contacts in dangerous situations
-- **Privacy Controls**: Fine-grained permissions for when and with whom your location is shared
+- **Trusted Groups**: create circles of trusted friends, family members, or colleagues;
+- **Real-time Location Sharing**: share your precise location with selected groups;
+- **Route Tracking**: set expected routes and arrival times;
+- **Automated Alerts**: generate notifications when deviating from planned routes or not reaching destinations on time;
+- **Emergency Notifications**: quick access to alert trusted contacts in dangerous situations;
+- **Privacy Controls**: fine-grained permissions for when and with whom your location is shared.
 
 ## Getting Started
 

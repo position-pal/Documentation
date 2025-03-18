@@ -9,7 +9,7 @@ mermaid: true
 Following the event storming session, the subsequent bounded contexts have been identified:
 
 - **Users Management**: it is responsible for managing the users' lifecycle, from registration to deletion and the management of their profile information along with the authentication and authorization.
-- **Groups Management**: it is responsible for managing the groups lifecycle, from creation to deletion, and the management of the group members.
+- **Groups Management**: it is responsible for managing the group lifecycle, from creation to deletion, and the management of the group members.
 - **Location Tracking**: it is responsible for managing the location tracking of the users, including the sharing of the location with group members, the reception of location updates, the sending of SOS alerts and the management of their paths.
 - **Notifications**: it is responsible for managing the notifications, including the push notifications to the users' devices.
 - **Chat**: it is responsible for managing the chat between the users and the group members.
@@ -86,6 +86,8 @@ Moreover we distinguish between _Commands_ and _Events_ to highlight the differe
 
 {{< /table >}}
 
+### Commands
+
 {{< table "table-striped " >}}
 
 | Command | Description |
@@ -126,21 +128,6 @@ Moreover we distinguish between _Commands_ and _Events_ to highlight the differe
 | **🚀 Driving event** | **SOSAlertTriggered** | The event sent from the client application to trigger an SOS alert, carrying the user's location. |
 | **📥 Driven event** | **SOSAlertStopped** | The event sent from the client application to stop the SOS alert. |
 | **📥 Driven event** | **UserUpdate** | The event sent from the Location Service to notify the client application about the user's state or location update. |
-
-{{< /table >}}
-
-### Commands
-
-{{< table "table-striped" >}}
-
-| Command | Description |
-| ------- | ----------- |
-| **DeleteGroup** | Delete a chat group. |
-| **ClientJoinsGroup** | Add a new client in a group. |
-| **ClientLeavesGroup** | Remove a client from a group. |
-| **ClientConnects** | Make a client become available for receiving new messages. |
-| **ClientDisconnects** | Make a client unavailable for receiving new messages. |
-| **SendMessage** | Send a message in a group. |
 
 {{< /table >}}
 
@@ -194,6 +181,21 @@ Moreover we distinguish between _Commands_ and _Events_ to highlight the differe
 | **🚀 Driving event** | **ClientConnected** | The event sent from the client application when user logs in and is able to receive messages. |
 | **🚀 Driving event** | **ClientDisconnected** | The event sent from the client application when user logs out and is no longer reachable. |
 | **📥 Driven event** | **Message** | The event sent from the client application when a new message is received in a group. |
+
+{{< /table >}}
+
+### Commands
+
+{{< table "table-striped" >}}
+
+| Command | Description |
+| ------- | ----------- |
+| **DeleteGroup** | Delete a chat group. |
+| **ClientJoinsGroup** | Add a new client in a group. |
+| **ClientLeavesGroup** | Remove a client from a group. |
+| **ClientConnects** | Make a client become available for receiving new messages. |
+| **ClientDisconnects** | Make a client unavailable for receiving new messages. |
+| **SendMessage** | Send a message in a group. |
 
 {{< /table >}}
 

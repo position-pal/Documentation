@@ -350,7 +350,6 @@ UC10 <-left- System
 
 ```plantuml
 @startuml chat-use-cases
-left to right direction
 
 actor "Group Member" as User
 actor "System" as System
@@ -366,7 +365,7 @@ rectangle "Chat sub-system" {
 
 }
 
-User -down-> UC1
+User -up-> UC1
 UC6 ..> UC1 : <<extend>>
 
 User -up-> UC2
@@ -375,13 +374,13 @@ UC6 ..> UC2 : <<extend>>
 User -up-> UC3
 UC3 ..> UC4 : <<include>>
 
-User -left-> UC4
+User -up-> UC4
 
 User -up-> UC5
 UC5 <.. UC2 : <<include>>
 
 
-System -> UC6
+System --> UC6
 
 @enduml
 ```

@@ -48,7 +48,7 @@ The gateway is the entry point of the system and is the only service that is exp
 Their main responsibilities and features are:
 
 - **routing each request to the correct service after having authenticated and authorized the user**: it is important that only authenticated users can access the services and that they can only access the functionalities they are allowed to use. For example, a user can only access the functionalities of the group they belong to.
-- **protocol translation**: for _synchronous_ remote procedure calls it is a best practice to use a ReST based API over the chosen gRPC protocol. This is because ReST APIs can be easily consumed by any client since they leverage standard HTTP methods and formats (like JSON), while gRPC APIs are more efficient but require specialized client libraries to handle Protobuf messages and HTTP/2 connections.
+- **protocol translation**: for _synchronous_ remote procedure calls, client-side, it is a best practice to use a ReST based API over the chosen gRPC protocol. This is because ReST APIs can be easily consumed by any client since they leverage standard HTTP methods and formats (like JSON), while gRPC APIs are more efficient but require specialized client libraries to handle Protobuf messages and HTTP/2 connections.
 - since it is the entry-point of the system it can be a single point of failure and a bottleneck. To avoid this it is implemented like a **stateless service**, so it can be easily scaled horizontally to handle more requests and to be fault-tolerant.
 
 ```mermaid
@@ -203,7 +203,7 @@ Its main responsibilities and features are:
 
 - **Cross-Boundary Communication**: By providing shared domain events and commands, it enables different services to communicate using a common language while maintaining loose coupling between components.
 
-- **Interface Serialization**: The kernel implements serialization mechanisms using Apache Avro that allow domain objects to be properly transmitted across service boundaries. Avro schema-based approach ensures data integrity during inter-service communication while providing efficient binary serialization.
+- **Interface Serialization**: The kernel implements serialization mechanisms using [Apache Avro](https://avro.apache.org/) that allow domain objects to be properly transmitted across service boundaries. Avro schema-based approach ensures data integrity during inter-service communication while providing efficient binary serialization.
 
   ```java
   interface AvroSerializer {

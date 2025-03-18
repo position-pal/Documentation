@@ -18,6 +18,10 @@
             "language": "markdown",
             "scheme": "file",
             "pattern": "content/docs/3-arch-design/1-bounded-contexts.md"
+        },
+        {
+            "language": "markdown",
+            "scheme": "file"
         }
     ]
 }
