@@ -20,11 +20,6 @@ hero:
     filename:
       desktop: "gradient-desktop.webp"
       mobile: "gradient-mobile.webp"
-  badge:
-    text: v1.0.0
-    color: primary # primary, secondary, success, danger, warning, info, light, dark
-    pill: false # boolean
-    soft: true # boolean
   titleLogo:
     path: "images/logos"
     filename: "default-logo.png"
@@ -65,8 +60,8 @@ featureGrid:
   enable: true
   weight: 20
   template: feature grid
-  title: Some wonderful text
-  subtitle: TODO
+  title: Your path, your way, your trusted network ❤️
+  # subtitle: 
   items:
     - title: Domain-Driven Designed
       icon: domain
@@ -83,6 +78,9 @@ featureGrid:
     - title: Kubernetes
       icon: rocket_launch
       description: Deployed on Kubernetes.
+    - title: Microservices Architecture
+      icon: scale
+      description: Built using Microservices architecture.
 
 # Image compare
 imageCompare:
