@@ -65,7 +65,7 @@ These tests are placed in the different adapter layers, where the business logic
 
 In order to run only the integration with a single service in some cases it was necessary to **mock** other services; this allowed us to create fine-grained tests that are isolated from the rest of the system, ensuring that the tests are repeatable and deterministic.
 
-For the creation of these tests, a `gradle` plugin has been setup to launch a docker container that dies immediately after the tests are finished.
+For the creation of these tests, a Gradle plugin has been setup to launch a docker container that dies immediately after the tests are finished.
 
 For example, launching postgres in the module reserved for storage tests:
 
@@ -202,9 +202,11 @@ export const stressOptions = {
 };
 ```
 
-These scenarios represent three different levels of stress on the system: `smoke`, `load`, and `stress`. The `smoke` scenario simulates a small number of users and requests, it aims to verify the system's basic functionalities and responsiveness, the `load` scenario simulates a medium number of users and requests, simulating the system's performance under normal conditions while The `stress` scenario simulates a large number of users and requests verifying the system's performance under extreme conditions.
+These scenarios represent three different levels of stress on the system: `smoke`, `load`, and `stress`. The `smoke` scenario simulates a small number of users and requests, it aims to verify the system's basic functionalities and responsiveness, the `load` scenario simulates a medium number of users and requests, simulating the system's performance under normal conditions while the `stress` scenario simulates a large number of users and requests verifying the system's performance under extreme conditions.
 
 Tests are composed of one or more stages where, each of these, represents a different level of stress on the system. Each stage has a duration and a target number of virtual users (VUs) that will be simulated during that stage. The `thresholds` object contains the performance thresholds that the system must meet during the test, such as the maximum duration of a request or the maximum failure rate.
+
+The smoke test results are shown below:
 
 ![HCP](/images/k6.png)
 

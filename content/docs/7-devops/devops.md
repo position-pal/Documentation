@@ -30,7 +30,7 @@ Indeed, code inside the _shared kernel_ must be shared across all the microservi
 To achieve this, the team has decided to create a separate Gradle project and publish it as a package on a package registry so that it can be included as a normal dependency in all the Gradle builds.
 Since the code is tightly bound to the project and not intended for public reuse, **GitHub Packages** was selected as the publishing repository ([here](https://github.com/orgs/position-pal/packages?repo_name=shared-kernel) the link to the published packages).
 
-{{< alert context="warning" text="GitHub Packages requires to be authenticated to correctly resolve and download the packages. Developers who intend to build locally the project need to configure their GitHub username and a PAT either in the `gradle.properties` or as environment variables. Detailed instructions are provided in each microservice `README` or in the [`shared-kernel README`](https://github.com/position-pal/shared-kernel)."/>}}
+{{< alert context="warning" text="GitHub Packages requires to be authenticated to correctly resolve and download the packages. Developers who intend to build locally the project need to configure their GitHub username and a PAT either in the `gradle.properties` or as environment variables. Detailed instructions are provided in each microservice `README` or in the [`shared-kernel README`](https://github.com/position-pal/shared-kernel#usage)."/>}}
 
 Here is an example of how to include the shared kernel in a Gradle project:
 
@@ -94,7 +94,7 @@ Moreover, the `check` task is enhanced to run all the QA tools before the tests,
 We have chosen to work with a single stable branch, the `main` branch, which always contains the latest working version of the code.
 All development is done in separate branches, such as `feature/name` for new features, `fix/name` for bug fixes.
 Once the changes are ready, they are submitted through pull requests (PRs) to be merged into the main branch.
-As a team guideline, PRs are **_rebased_** on the main branch if it is self-contained and their commits are significant and need to be kept in the history.
+As a team guideline, PRs are **_rebased_** on the main branch if they are self-contained and their commits are significant and need to be kept in the history.
 Otherwise, if the PR is made of many commits (each of which with some experiments) and the history is not relevant, a **_squash_** strategy is adopted.
 **No merge commits** are allowed in the main branch, since we want to keep the history _clean_ and _linear_.
 
@@ -109,7 +109,7 @@ Moreover, all teams members use commit signing to ensure the integrity of the co
 ### Git hooks
 
 To enforce the use of the _Conventional Commits_ standard and _Quality Assurance_ tools (described in the [Validation section](http://localhost:1313/docs/6-validation/validation/#quality-assurance)) each project is equipped with Git hooks that prevent committing code that does not comply with the standards.
-Where tests are fast the hooks are also configured to run also the tests before the commit.
+Where tests are fast, the hooks are also configured to run also the tests before the commit.
 Sometimes, however, repositories contain integration tests that are more time-consuming and would unacceptably slow down the development process.
 In these cases only the _linting_ and _formatting_ tools are run (along with the _Conventional Commits_ check).
 This is not a problem since the CI/CD pipeline will run all the tests for each pushed commit, intercepting any possible regression at any time, preventing the main branch from being polluted with broken code.
@@ -118,13 +118,13 @@ This is not a problem since the CI/CD pipeline will run all the tests for each p
 
 To ensure the stability of the main branch, the team has decided to enable the following branch protections:
 
-- **Restrict deletions** to prevent the main branch from being deleted
-- **Require linear history** to prevent merge commits from being pushed to the main branch
-- **Block force pushes** to prevent users from force pushing to the main branch
+- **Restrict deletions** to prevent the main branch from being deleted;
+- **Require linear history** to prevent merge commits from being pushed to the main branch;
+- **Block force pushes** to prevent users from force pushing to the main branch.
 
 ### Semantic versioning and release
 
-Each repository is versioned following the **Semantic Versioning** standard and is **fully automated** using **Semantic Release**.
+Each repository is versioned following the **Semantic Versioning** standard and is **fully automated** using [**Semantic Release**](https://semantic-release.gitbook.io/semantic-release).
 This tool is integrated into the CI/CD pipeline and, after successfully passing the tests, automatically analyzes the commit message to determine whether a new version should be released.
 If a release is needed, it calculates the new version number, generates the changelog, and creates a new release on GitHub.
 
@@ -234,6 +234,8 @@ These are available only in the repository and cannot be used in forks or in PRs
 For this reason, the pipeline is designed to detect if the workflow have access to the required secrets and, if not, it skips the end-to-end tests.
 In case a PR is opened from a fork, a comment is automatically triggered to warn the contributor a review from a team member is required to validate the changes and then push them to a pre-release branch where the secrets are available and the end-to-end tests can be run.
 Once also the end-to-end tests are successful, the PR can be merged into the main branch.
+
+![gateway ci comments](/images/gateway-ci.png)
 
 The modified workflow for the gateway is depicted in the following diagram:
 
