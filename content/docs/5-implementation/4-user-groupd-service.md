@@ -10,15 +10,16 @@ This chapter provides an overview of the implementation details of the **User an
 
 ## High level overview
 
-The User and Group Service is responsible for managing the users and groups of the system. It is a core service that is used by other services to manage the users and groups of the system.
+The User and Group Service is responsible for managing the users and groups of the system.
+It is a core microservice that supplies user and group data to other services and is composed of the following parts:
 
-The User and Group Service is composed of the following parts:
+- **Authentication Management**: This is responsible for managing the authentication and identity of the users of the system. It provides APIs for user authentication and identity management.
 
-- **User Management Component**: This is responsible for managing the users of the system. It provides APIs for creating, updating, deleting, and retrieving user information.
+- **User Management**: This is responsible for managing the users of the system. It provides APIs for creating, updating, deleting, and retrieving user information.
 
-- **Group Management Component**: This is responsible for managing the groups of the system. It provides APIs for creating, updating, deleting, and retrieving group information.
+- **Group Management**: This is responsible for managing the groups of the system. It provides APIs for creating, updating, deleting, and retrieving group information.
 
-- **Membership Management Component**: This is responsible for managing the relationship between users and groups. It provides APIs for adding users to groups, removing users from groups, and retrieving the users of a group.
+- **Membership Management**: This is responsible for managing the relationship between users and groups. It provides APIs for adding users to groups, removing users from groups, and retrieving the users of a group.
 
 ## User Service
 
