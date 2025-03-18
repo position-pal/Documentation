@@ -278,7 +278,7 @@ To automate the PRs merging process, the **Mergify** bot has been integrated int
 - automatically delete branches after the PR has been merged.
 - automatically comment on PRs that have conflicts or do not respect the Conventional Commits standard.
 
-Merge protections are in place to ensure merges are performed only when the `success` job of the CI pipeline is successful, not unresolved conversations are present, and no conflicts are present.
+Merge protections are in place to ensure merges are performed only when the `success` job of the CI pipeline is successful, there are no unresolved conversations and no conflicts are present.
 
 The complete configuration can be found [here](https://github.com/position-pal/mergify-config/blob/main/.mergify.yml).
 
@@ -286,12 +286,14 @@ The complete configuration can be found [here](https://github.com/position-pal/m
 
 We've integrated _SonarCloud_ into our repositories to run automatically within our CI pipeline, in addition to the static quality plugins already integrated into our build tool. This ensures continuous monitoring of code quality, detecting issues such as bugs, code smells, and security vulnerabilities. By identifying bad coding patterns and potential risks early, we enhance maintainability, reduce technical debt, and improve overall software security and reliability.
 
+![sonarcloud](/images/sonarcloud.png)
+
 ## Continuous Deployment
 Each microservice is deployed on a Kubernetes cluster using Helm charts maintained in separate repositories and versioned according to Semantic Versioning standards. Upon release of a new version, the corresponding Helm chart is updated and published to ghcr.io through an automated CI/CD pipeline that handles all necessary deployment steps.
 
  We maintain and deploy the cluster state using Terraform, with infrastructure defined in a dedicated [repository](https://github.com/position-pal/position-pal-terraform), specifically in the `plan` folder where all configuration settings are centralized for better organization. To update infrastructure, we modify the configuration files and create a pull request, which triggers the comprehensive CD pipeline to manage deployment using the [HashiCorp Cloud Platform](https://developer.hashicorp.com/terraform/cloud-docs) (HCP) Service: a robust managed solution that securely stores infrastructure state, prevents conflicts between developers working simultaneously, and handles secrets and sensitive data with appropriate security measures. 
- 
- When a pull request is opened, the pipeline automatically runs a plan to preview potential changes and adds the detailed output as a comment to the PR for thorough review by team members. Once the changes are approved and the PR is merged into the main branch, the pipeline executes applay to execute the infrastructure changes in a controlled and documented manner.
+
+ When a pull request is opened, the pipeline automatically runs a plan to preview potential changes and adds the detailed output as a comment to the PR for thorough review by team members. **Once the changes are approved and the PR is merged into the main branch, the pipeline executes the apply command in order to bring the changes in the infrastructure in a controlled and documented manner.
 
 ![HCP](/images/HCP.png)
 
