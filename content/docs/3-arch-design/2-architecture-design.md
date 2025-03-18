@@ -228,58 +228,53 @@ NOT_SUB_NOTIF -0)- MB_SUB_NOTIF
 ```plantuml
 @startuml deployment-view
 actor "User" as U
+
 node "Client Node" as CN {
-    component "Client Application" as CA
+    component "Client Application" <<container>> as CA
 }
 
-
-node "Infrastructure" as INF {
-
+node "Backend Infrastructure" as INF {
    
-    component "API Gateway" as AGW
-    component "Message Broker" as MB
+    node "API Gateway" <<container>> as AGW
+    node "Message Broker" <<container>> as MB
 
     component "Notification" as NS {
-        component "Notification Service" as NSI
-        component "Notification Database" as ND
-
+        node "Notification Service" <<container>> as NSI
+        node "Notification Database" <<container>> as ND
         NSI -- ND
     }
 
     component "User" as US {
-        component "User Service" as USI
-        component "User Database" as UD
-
+        node "User Service" <<container>> as USI
+        node "User Database" <<container>> as UD
         USI -- UD
     }
 
     component "Location" as LS {
-        component "Location Service" as LSI
-        component "Location Database" as LD
-
+        node "Location Service" <<container>> as LSI
+        node "Location Database" <<container>> as LD
         LSI -- LD
     }
 
     component "Chat" as CS {
-        component "Chat Service" as CSI
-        component "Chat Database" as CD
-
+        node "Chat Service" <<container>> as CSI
+        node "Chat Database" <<container>> as CD
         CSI -- CD
     }
 
-    LS .down. MB: <<message>>
-    CS .down. MB: <<message>>
-    NS .down. MB: <<message>>
-    US .down. MB: <<message>>
+    LSI ... MB: <<message>>
+    CSI ... MB: <<message>>
+    NSI ... MB: <<message>>
+    USI ... MB: <<message>>
 
-    AGW .down. US: <<rpc>>
-    AGW .down. LS: <<rpc>>
-    AGW .down. CS: <<rpc>>
-    AGW .down. NS: <<rpc>>
+    AGW .. USI
+    AGW .. LSI
+    AGW .. CSI
+    AGW .. NSI
 }
 
-AGW .right. CA: <<http connection>>
-U .. CA: <<client connection>>
+AGW .up. CA
+U .. CA
 @enduml
 ```
 
