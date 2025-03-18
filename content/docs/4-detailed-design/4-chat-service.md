@@ -10,7 +10,7 @@ Chat service is responsible for managing the **communication between users in _r
 
 ## Abstract Design
 
-Here are presented the main components of the chat service, we start describing the foundamental entities of the domain, then we move to the infrastructure layer, where we define the commands and events that will be used to interact with the domain entities.
+Here are presented the main components of the chat service, we start describing the fundamental entities of the domain, then we move to the infrastructure layer, where we define the commands and events that will be used to interact with the domain entities.
 
 ### Structure
 
@@ -113,7 +113,7 @@ package infrastructure {
     }
 
     
-    abstract class GroupHandler {
+    abstract class GroupHandler <<service>> {
         + group: Group
         + client: List<Client>
         --
@@ -122,7 +122,6 @@ package infrastructure {
 
     GroupHandler .up.> GroupCommand
     GroupHandler .up.> GroupEvent
-
 
     interface GroupHandlerService {
         + delete(groupID: String)
@@ -148,8 +147,6 @@ package realtime {
         interface RealTimeService <<service>> <<port>> {
             + connect(clientID: String, groupID: String)
         }
-
-        
 
         RealTimeService *-left-> "1..n" Route
         RealTimeService *-up-> "1" GroupHandlerServiceImpl

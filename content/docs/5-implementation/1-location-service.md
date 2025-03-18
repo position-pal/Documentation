@@ -9,6 +9,26 @@ toc: true
 
 This chapter provides an overview of the implementation details of the **Location Service**.
 
+## High level overview
+
+We adopted **Clean Architecture** approach with clearly separated layers. This architectural choice provides significant benefits for a service responsible for sensitive user data:
+
+```plaintext
+user-service/
+├── domain/           # Core business entities and rules
+├── application/      # Use cases and service interfaces
+├── storage/          # Database and persistence implementations
+├── presentation/     # Protocol definitions
+├── tracking-actors/  # Real-time tracking management adapter
+├── ws/               # Websocket communication adapter
+├── grpc/             # gRPC service implementations
+├── messages/         # RabbitMQ and Message broker integration
+└── entrypoint/       # Application bootstrap
+```
+
+Each layer has a specific responsibility with dependencies pointing inward toward the domain layer.
+This approach allows us to isolate the core business logic from implementation details.
+
 ## User Tracking and Real-time Management
 
 The most important and critical feature of the Location Service is the **tracking** of the user's location and real-time management of their  state considering the high volume of data that needs to be processed in real-time.

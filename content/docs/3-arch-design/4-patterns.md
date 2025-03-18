@@ -25,17 +25,16 @@ The user service publishes domain events whenever a group-related action occurs,
 
 This approach ensures that all the services that need to know this information can subscribe to the events and update their local projections accordingly.
 
-
 -->
 
-Every microservice that has the need to know the group members information have their own read-only 'replica' that is designed specifically to serve the queries of that service.
+Every microservice that has the need to know the group members information have their own read-only "replica" that is designed specifically to serve the queries of that service.
 The service keeps the database up to date by subscribing to Domain events published by the service that own the data, in our case the Users & Groups service.
 This pattern allows each service to support its own denormalized view of the groups data that is optimized for its specific needs, ensuring that the services are loosely coupled and that the system is scalable and performant.
 No complex and slow queries are needed to be executed on the user service to retrieve the group members information, as the data is already available in the read-only replica of the service that needs it.
 This also improves the overall system responsiveness and extensibility because, similar to the observer pattern, the publisher does not need to know who is interested in the event.
 Consequently, the publisher is not affected by changes in subscribers, such as the addition of a new service, ensuring no impact on the publisher.
 
-On the downside, this approach makes the system eventually consistent, but this is a trade-off that has been accepted in order to ensure the system's scalability and performance.
+On the downside, this approach makes the system eventually consistent, but this is a trade-off that has been accepted in order to ensure the system scalability and performance.
 
 ### [Event sourcing](https://microservices.io/patterns/data/event-sourcing.html)
 
@@ -56,7 +55,7 @@ Though, the communication between the client and the microservices through the A
 
 ### [API Gateway](https://microservices.io/patterns/apigateway.html)
 
-The API Gateway is the single entry point for all clients, providing a unified interface to the system's microservices.
+The API Gateway is the single entry point for all clients, providing a unified interface to the system microservices.
 It's main purpose is to **aggregate** the functionalities of the architecture, **routing** the requests to the appropriate service, **aggregating** the responses, and providing a unified interface to the client applications.
 Moreover, it is responsible for ensuring the **security** of the system, handling **authentication and authorization**.
 Lastly, it surely provides **communication protocols translation** (e.g. from REST to gRPC or Websocket to a Message Broker).
@@ -66,7 +65,7 @@ Lastly, it surely provides **communication protocols translation** (e.g. from RE
 ### [Access Token](https://microservices.io/patterns/security/access-token.html)
 
 The system uses the _Access Token_ pattern to ensure the security of the system.
-The _Access Token_ pattern is used to provide a secure way to access the system's resources, ensuring that only authorized users can access the system's functionalities.
+The _Access Token_ pattern is used to provide a secure way to access the system resources, ensuring that only authorized users can access the system functionalities.
 For each request, the client must provide a valid access token, which is then validated by the system to ensure that the user is authorized to access the requested resource.
 
 ## Deployment Patterns

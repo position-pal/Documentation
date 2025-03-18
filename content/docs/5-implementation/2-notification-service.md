@@ -10,6 +10,25 @@ toc: true
 
 Currently, the only supported notification types are **push notifications**, which are essential to guarantee that the client is immediately informed about groups changes or user state changes, like the trigger of the SOS alert or the journey start.
 
+## High level overview
+
+We adopted **Clean Architecture** approach with clearly separated layers. This architectural choice provides significant benefits for a service responsible for sensitive user data:
+
+```plaintext
+user-service/
+├── domain/           # Core business entities and rules
+├── application/      # Use cases and service interfaces
+├── storage/          # Database and persistence implementations
+├── presentation/     # Protocol definitions
+├── fcm/              # Firebase Cloud Messaging adapter
+├── grpc/             # gRPC service implementations
+├── mom/              # RabbitMQ and Message broker integration
+└── entrypoint/       # Application bootstrap
+```
+
+Each layer has a specific responsibility with dependencies pointing inward toward the domain layer.
+This approach allows us to isolate the core business logic from implementation details.
+
 <!--
 
 ```plantuml
@@ -115,10 +134,10 @@ graph LR
     QueueSMS .-> Microservice
 ```
 
-The fact the exchange is durable ensures that the exchange will survive a broker restart, and the messages published to it will be persisted until they are delivered to a consumer notification instance.
+The fact the exchange is durable ensures that it will survive a broker restart, and the messages published to it will be persisted until they are delivered to a consumer notification instance.
 
 The concrete implementation is as follows.
-As you can see, the `RabbitMQNotificationsConsumer` class is responsible for handling the incoming messages from the broker and dispatching them to the appropriate service handler based on the message type and in accordance to DDD's building blocks.
+As you can see, the `RabbitMQNotificationsConsumer` class is responsible for handling the incoming messages from the broker and dispatching them to the appropriate service handler based on the message type and in accordance to DDD building blocks.
 The **Kotlin Coroutines** library is used to handle the asynchronous processing of the messages:
 
 ```kotlin
@@ -175,7 +194,7 @@ class RabbitMQNotificationsConsumer(
 
 The microservice is integrated with **Firebase Cloud Messaging (FCM)** to send push notifications to the client application. 
 
-FCM is a _cross-platform_ messaging solution provided by Google that enables developers to send notifications and data messages to apps running on _iOS_, _Android_, and _web platforms_.
+FCM is a _cross-platform_ messaging solution provided by Google that enables developers to send notifications and data messages to apps running on _iOS_, _Android_ and _web platforms_.
 It allows backend services to communicate with client applications by delivering messages _efficiently_ and _securely_.
 
 FCM has been chosen over plain WebSockets, which are already used in the system for the real-time tracking of the user's position, due to several compelling reasons aligned with our specific requirements and infrastructure goals:

@@ -37,6 +37,7 @@ flowchart TD
 ```
 
 ### RPC Technologies
+
 For synchronous communication between services, we use [gRPC](https://grpc.io/), a high-performance, open-source RPC framework developed by Google. gRPC uses Protocol Buffers (Protobuf) as its interface definition language and provides features such as bi-directional streaming, authentication, and load balancing. gRPC is particularly well-suited for microservices architectures due to its efficiency and support for multiple programming languages.
 
 Every service that exposes an API will define its interface using Protobuf and generate client and server code in the desired programming language. This allows services to communicate over HTTP/2 using binary serialization, which is more efficient than text-based formats like JSON. gRPC also supports streaming and bidirectional communication, making it suitable for a wide range of use cases.
@@ -96,9 +97,11 @@ flowchart RL
 
 The API Gateway is implemented using **Express**, a lightweight and flexible _Node.js_ framework that simplifies the creation of web applications and ReST APIs.
 
+Note that the ReST API Gateway is implemented using the [Level 2 of the Richardson Maturity Model](https://martinfowler.com/articles/richardsonMaturityModel.html), **not** including the HATEOAS constraint.
+
 An express application is built around the concept of _routes_ and _controllers_: routes define the API endpoints and delegate request processing, while controllers contain the logic for handling requests, such as forwarding them to microservices or aggregating responses.
 
-An example of a route to get all the [groups sessions]():
+An example of a route to get all the [groups sessions](/docs/4-detailed-design/2-location-service/#structure):
 
 ```javascript
 const express = require("express");
@@ -190,8 +193,6 @@ function authGroup(token, groupId) {
 }
 ```
 
-Note that the ReST API Gateway is implemented using the [Level 2 of the Richardson Maturity Model](https://martinfowler.com/articles/richardsonMaturityModel.html), **not** including the HATEOAS constraint.
-
 ## Shared Kernel
 
 The shared kernel is a foundational component of the Position Pal project that contains common domain models and their presentation capabilities. It serves as a contract between different services within the system.
@@ -202,20 +203,20 @@ Its main responsibilities and features are:
 
 - **Cross-Boundary Communication**: By providing shared domain events and commands, it enables different services to communicate using a common language while maintaining loose coupling between components.
 
-- **Interface Serialization**: The kernel implements serialization mechanisms using Apache Avro that allow domain objects to be properly transmitted across service boundaries. Avro's schema-based approach ensures data integrity during inter-service communication while providing efficient binary serialization.
+- **Interface Serialization**: The kernel implements serialization mechanisms using Apache Avro that allow domain objects to be properly transmitted across service boundaries. Avro schema-based approach ensures data integrity during inter-service communication while providing efficient binary serialization.
 
   ```java
-  export interface EventSerializer {
-    serialize<T>(event: T): Uint8Array;
-    deserialize<T>(data: Uint8Array, type: new () => T): T;
+  interface AvroSerializer {
+    private <T> byte[] serialize(final T object, final Schema schema)
+    private <T> T deserialize(final byte[] data, final Schema schema)
   }
   ```
 
 - **Presentation Capabilities**: Through the kernel-presentation module, it provides standardized ways to represent domain objects in user interfaces or external APIs, maintaining consistency in how domain concepts are presented.
 
-The shared kernel is implemented as three separate packages:
-- **kernel-domain**: Contains the core domain models, events, and commands;
-- **kernel-presentation**: Houses presentation-related functionality for consistent UI representation;
-- **serialization**: Provides serialization utilities for domain objects.
+The shared kernel is implemented as three separate submodules:
 
-The shared kernel is published to GitHub Packages, allowing it to be easily included as a dependency in other components of the Position Pal ecosystem. This approach ensures that all services use exactly the same domain definitions, reducing integration issues and promoting the DRY (Don't Repeat Yourself) principle across the distributed system.
+- **kernel-domain**: Contains the core domain models, events, and commands;
+- **kernel-presentation**: Houses presentation-related functionality for consistent representation of domain objects.
+
+The shared kernel is published to GitHub Packages, allowing it to be easily included as a dependency in other components of the Position Pal ecosystem. This approach ensures that all services use exactly the same domain definitions, reducing integration issues and promoting the DRY (Don't Repeat Yourself) principle (see [DevOps section](/docs/7-devops/devops)).

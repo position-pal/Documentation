@@ -10,8 +10,8 @@ toc: false
 The shared kernel includes the common entities used by all services.
 Its primary objective is to encapsulate _only_ the integration contracts and data structures meant to be passed across the boundaries of the bounded contexts.
 
-Since the system's architecture is event-driven, communication between microservices occurs exclusively through events and commands exchanged via the message broker.
-These events and commands have been represented as classes and interfaces, as illustrated in the following UML diagram.
+Since the system architecture is event-driven, communication between microservices occurs exclusively through events and commands exchanged via the message broker.
+These have been represented as classes and interfaces, as illustrated in the following UML diagram.
 This approach facilitates and reduce the cost of duplicating code across services, ensuring consistency and coherence in the system's communication.
 
 ```plantuml

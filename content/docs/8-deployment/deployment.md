@@ -1,7 +1,7 @@
 ---
 weight: 800
-title: "Deployment"
-description: "How we deployed the system on Kubernetes"
+title: "Deployment & Monitoring"
+description: "How we deployed the system on Kubernetes and monitored it"
 icon: "Rocket_Launch"
 draft: false
 mermaid: true

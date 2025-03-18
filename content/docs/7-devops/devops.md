@@ -2,7 +2,7 @@
 weight: 700
 title: "DevOps"
 description: "DevOps practices and tools"
-icon: "Rocket_Launch"
+icon: star
 draft: false
 mermaid: true
 toc: true

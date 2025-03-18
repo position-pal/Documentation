@@ -15,6 +15,27 @@ We built a **WebSocket-based** communication system using an actor model. Specif
 WebSockets proved ideal for this use case since each client establishes and maintains an open connection with the server throughout the chat session. This design also addresses scalability concerns, as each connection binds to a specific service instance, ensuring all requests from a user route to the same service instance.
 To further enhance scalability, we implemented the whole system using Akka Cluster, which allows automatic and trasnparent allocation of actors across cluster nodes, ensuring horizontal scaling and fault tolerance.
 
+### Clean Architecture Implementation
+
+For the Chat Service implementation, we adopted a **Clean Architecture** approach with clearly separated layers. This architectural choice provides significant benefits for a service responsible for sensitive user data:
+
+```plaintext
+chat-service/
+├── amqp/           # Message broker integration
+├── common/         # Common part of the whole service 
+├── domain/         # Core business entities and rules
+├── application/    # Use cases and service interfaces
+├── storage/        # Database and persistence implementations
+├── presentation/   # Protocol definitions
+├── grpc/           # gRPC service implementations
+├── sockets/        # Realtime communication
+├── infrastructure  # Contains the main components 
+└── entrypoint/     # Application bootstrap
+```
+
+Each layer has a specific responsibility, with dependencies pointing inward toward the domain layer. This approach allows us to isolate the core business logic from implementation details.
+
+
 ## Chat Management
 
 Inside the chat system are present two type of actor entities: The `GroupEventSourceHandler` and the `ClientActor`. The first one is developed upon the Event Sourcing pattern, the [entity](https://github.com/position-pal/chat-service/blob/main/infrastructure/src/main/scala/io/github/positionpal/group/GroupEventSourceHandler.scala) it receives commands that represents the actions that can be performed on the group, and emits events that represents changes that have been applied to the group. 
@@ -62,7 +83,7 @@ object GroupEventSourceHandler:
 
 The `ClientActor` is instead responsible for managing the communication between the client and the group. It receives messages from the client and forwards them to the group, and vice versa. This entity is created through the webserver when a new connection is established, and is then linked to the `GroupEventSourceHandler` that manages the group the client is part of. As [_Akka HTTP_](https://doc.akka.io/libraries/akka-http/current/index.html) is used as the webserver, the `ClientActor` entity is created using an [_Akka Stream_](https://doc.akka.io/docs/akka/current/stream/index.html) that allows to handle the WebSocket connection.
 
-![Ws Flow](/images/wsflow.svg)
+![Ws Flow](/images/wsflow.png)
 
 The image above shows the flow of messages between the client and the group. When a new connection is estabilished then a new Sink and Source are created:
 - The sink is used to receive messages from the client and forward them to the group using the `GroupService`;
@@ -116,12 +137,15 @@ GraphDSL.create():
           .withRoutingKey(queue.routingKey.getOrElse(""))
       (declaration, binding)
 
-      val settings = NamedQueueSourceSettings(provider, queue.name).withDeclarations(
-      queueDeclaration +: exchangeDeclarations.flatMap(decls => List(decls._1, decls._2)),
+    val settings = NamedQueueSourceSettings(provider, queue.name)
+      .withDeclarations(
+        queueDeclaration +: exchangeDeclarations.flatMap(decls => List(decls._1, decls._2)),
       ).withAckRequired(false)
-      Source.fromGraph(AmqpSource.atMostOnceSource(settings, bufferSize = 10)).map(msg => (queue.name, msg))
+      
+    Source.fromGraph(AmqpSource.atMostOnceSource(settings, bufferSize = 10)).map(msg => (queue.name, msg))
 
     val merger = graph.add(Merge[(String, ReadResult)](queues.length))
+
     val messageProcessorUnit = Flow[(String, ReadResult)].mapAsync(1):
       case (_, msg) =>
       Future:

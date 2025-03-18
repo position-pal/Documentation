@@ -40,7 +40,7 @@ package domain {
         + longitude: Double
     }
 
-    interface Address {
+    interface Address <<value object>> {
         + name: String
         + position: GPSLocation
     }
@@ -58,14 +58,14 @@ package domain {
     '''GroupId "1" <---* DomainEvent
     DomainEvent *-right-> "1" Scope
 
-    interface DrivenEvent extends DomainEvent
+    interface DrivenEvent <<domain event>> extends DomainEvent
     interface UserUpdate <<domain event>> implements DrivenEvent {
         + position: Option[GRSLocation]
         + status: UserState
     }
 
-    interface DrivingEvent extends DomainEvent
-    interface ClientDrivingEvent extends DrivingEvent
+    interface DrivingEvent <<domain event>> extends DomainEvent
+    interface ClientDrivingEvent <<domain event>> extends DrivingEvent
 
     interface SampledLocation <<domain event>> {
         + position: GPSLocation
@@ -87,7 +87,7 @@ package domain {
     interface RoutingStopped <<domain event>> 
     ClientDrivingEvent <|... RoutingStopped
 
-    interface InternalDrivingEvent extends DrivingEvent
+    interface InternalDrivingEvent <<domain event>> extends DrivingEvent
     interface WentOffline <<domain event>>
     InternalDrivingEvent <|... WentOffline
     interface StuckAlertTriggered <<domain event>> 
@@ -352,7 +352,7 @@ deactivate User
 
 ### Behavior
 
-As an event driven architecture, the state of each group's member can be described by the following state diagram, drawing the possible state transitions that can be fired by one of the above `DrivingEvent`.
+As an event driven architecture, the state of each group member can be described by the following state diagram, drawing the possible state transitions that can be fired by one of the above `DrivingEvent`.
 
 ```plantuml
 @startuml userstate-behavior

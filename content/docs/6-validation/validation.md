@@ -58,29 +58,23 @@ Leveraging testing DSLs frameworks like [Kotest](https://kotest.io) and [ScalaTe
 
 ## Integration tests
 
-Integration tests are used to verify that different parts of the system work together correctly. They are more complex than unit tests, as they involve multiple components and services.
+Integration tests are used to verify that different parts of the system work together correctly.
+They are more complex than unit tests, as they involve testing the interaction between a real infrastructure component, and for this reason, are slower and more expensive to run.
 
-These tests are placed in the service layer, where the business logic is implemented, and are run against the real system, including the database and external services.
+These tests are placed in the different adapter layers, where the business logic is implemented, and are run against the real system, including the database and external services.
 
-In some situations it was necessary to mock some services, this allowed us to create fine-grained tests that are isolated from the rest of the system, ensuring that the tests are repeatable and deterministic.
+In order to run only the integration with a single service in some cases it was necessary to **mock** other services; this allowed us to create fine-grained tests that are isolated from the rest of the system, ensuring that the tests are repeatable and deterministic.
 
-For the creation of these tests, a task was set up via `gradle` to launch a docker container that dies immediately after the tests are finished.
+For the creation of these tests, a `gradle` plugin has been setup to launch a docker container that dies immediately after the tests are finished.
 
-For example, launch postgres in the module reserved for storage tests:
+For example, launching postgres in the module reserved for storage tests:
 
 ```kotlin
-normally {
-    dockerCompose {
-        startedServices = listOf("postgres")
-        isRequiredBy(tasks.test)
-    }
-} except { inCI and (onMac or onWindows) } where {
-    tasks.test { enabled = false }
-} cause "GitHub Actions runner does not support Docker Compose"
+dockerCompose {
+    startedServices = listOf("postgres")
+    isRequiredBy(tasks.test)
+}
 ```
-
-Note how there is a section dedicated to CI that allows testing only on linux systems, consistent with the constraints set by the GitHub actions.
-
 
 ## End-to-End tests
 
@@ -207,10 +201,10 @@ export const stressOptions = {
     tags: { test_type: 'stress' },
 };
 ```
+
 These scenarios represent three different levels of stress on the system: `smoke`, `load`, and `stress`. The `smoke` scenario simulates a small number of users and requests, it aims to verify the system's basic functionalities and responsiveness, the `load` scenario simulates a medium number of users and requests, simulating the system's performance under normal conditions while The `stress` scenario simulates a large number of users and requests verifying the system's performance under extreme conditions.
 
 Tests are composed of one or more stages where, each of these, represents a different level of stress on the system. Each stage has a duration and a target number of virtual users (VUs) that will be simulated during that stage. The `thresholds` object contains the performance thresholds that the system must meet during the test, such as the maximum duration of a request or the maximum failure rate.
-
 
 ## Quality Assurance
 

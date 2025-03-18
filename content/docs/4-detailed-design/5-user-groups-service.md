@@ -32,19 +32,7 @@ package domain {
   }
 
 
-  package authentication {
-      interface Secret <<value object>> {
-          + value: String
-      }
-      interface Issuer <<value object>> {
-          + value: String
-      }
-      interface Audience <<value object>> {
-          + value: String
-      }
-  }
-
-  interface membership {
+  interface Membership <<value object>>{
     + userId: UserId
     + groupId: GroupId
   }
@@ -70,11 +58,9 @@ package domain {
 
 - **`User`**: The User entity represents an individual in the system. Each User is uniquely identified by a value object, _UserId_, ensuring consistency and traceability. The entity includes attributes such as name, email, and password, which can be updated while maintaining the same identity.
 
-- **`Group`** The Group entity represents a collection of users. It is identified by a _GroupId_ value object and has attributes like a group name and a list of members (Users). The association (Group → 0..* User) signifies that a group can have zero or more users, enabling flexible management of group memberships.
+- **`Group`** The Group entity represents a collection of users. It is identified by a _GroupId_ value object and has attributes like a group name and a list of members (Users).
 
 - **`Membership`** The Membership value object captures the relationship between a user and a group. It includes the _UserId_ and _GroupId_ value objects, establishing a many-to-many association between users and groups. This structure allows for efficient querying of group memberships and user-group relationships.
-
-- **`Secret`, `Issuer`, `Audience`** These value objects are part of the authentication domain and represent the secret key, issuer, and audience of the JWT token, respectively. They encapsulate the necessary information for token generation and validation, ensuring secure authentication and authorization processes.
 
 
 ```plantuml
@@ -148,11 +134,11 @@ package shared.kernel.domain.events {
     }
 }
 
-  application.service.UserService ..> application.repository.UserRepository : uses
-  application.service.GroupService ..> application.repository.GroupRepository : uses
-  application.service.AuthService ..> application.repository.AuthRepository : uses
-  application.service.GroupService ..> shared.kernel.domain.events.GroupDeleted : publishes
-  application.service.GroupService ..> shared.kernel.domain.events.GroupCreated : publishes
+  application.service.UserService .up.> application.repository.UserRepository : uses
+  application.service.GroupService .up.> application.repository.GroupRepository : uses
+  application.service.AuthService .up.> application.repository.AuthRepository : uses
+  application.service.GroupService .up.> shared.kernel.domain.events.GroupDeleted : publishes
+  application.service.GroupService .up.> shared.kernel.domain.events.GroupCreated : publishes
   application.service.GroupService ..> shared.kernel.domain.events.AddedMemberToGroup : publishes
   application.service.GroupService ..> shared.kernel.domain.events.RemovedMemberToGroup : publishes
 
@@ -178,7 +164,7 @@ package shared.kernel.domain.events {
 ### Interaction
 The interaction between the main components of the system is described in the following sequence diagram.
 
-- `User Registration:` A new user registers by sending their username, email, and password to the Auth Service. The service persists the new user in the User-Group Store, publishes a UserCreated event on the Event Bus, and returns the created user details.
+- `User Registration:` A new user registers by sending their email, and password to the Auth Service. The service persists the new user in the User-Group Store, publishes a UserCreated event on the Event Bus, and returns the created user details.
 
 - `User Login:` The user logs in by providing credentials. The Auth Service validates these against the User-Group Store and returns a UserSession (including a token).
 
@@ -186,7 +172,7 @@ The interaction between the main components of the system is described in the fo
 
 - `Group Creation:` The user creates a group through the Group Handler. The handler persists the new group (recording the creator’s UserID), publishes a GroupCreated event, and returns the group details.
 
-- `Group Update:` The user updates the group’s name via the Group Handler. The updated details are persisted, a GroupUpdated event is published, and the updated group details are returned.
+- `Group Update:` The user updates the group name via the Group Handler. The updated details are persisted, a GroupUpdated event is published, and the updated group details are returned.
 
 - `User Join Group:` The user joins a group by sending a join request to the Group Handler. The Group Handler adds the user to the group in the store, publishes a UserAddedToGroup event, and returns the updated group details.
 
@@ -209,11 +195,11 @@ queue "Event Bus" as EB
 activate EB
 
 == User Registration ==
-U -> AS: registerUser(username, email, password)
+U -> AS: registerUser(email, password)
 activate AS
-AS -> UGS: persistUser(username, email, password)
+AS -> UGS: persistUser(email, password)
 activate UGS
-UGS --> AS: UserDetails (UserID, username, email)
+UGS --> AS: UserDetails
 deactivate UGS
 AS -> EB: publish(UserCreated event)
 AS --> U: registrationSuccess(UserDetails)
@@ -221,9 +207,9 @@ deactivate AS
 
 == User Login ==
 autonumber inc B
-U -> AS: login(username, password)
+U -> AS: login(email, password)
 activate AS
-AS -> UGS: validateCredentials(username, password)
+AS -> UGS: validateCredentials(email, password)
 activate UGS
 UGS --> AS: UserSession (UserID, Token)
 deactivate UGS

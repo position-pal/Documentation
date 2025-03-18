@@ -8,17 +8,17 @@ toc: true
 
 This chapter provides an overview of the implementation details of the **User and Group Service**.
 
-## High level overview and modules structure
+## High level overview
 
-The User and Group Service is responsible for managing the users and groups of the system. It is a core service that is used by other services to manage the users and groups of the system. 
+The User and Group Service is responsible for managing the users and groups of the system. It is a core service that is used by other services to manage the users and groups of the system.
 
-The User and Group Service is composed of the following modules:
+The User and Group Service is composed of the following parts:
 
-- **User Management Module**: This module is responsible for managing the users of the system. It provides APIs for creating, updating, deleting, and retrieving user information.
+- **User Management Component**: This is responsible for managing the users of the system. It provides APIs for creating, updating, deleting, and retrieving user information.
 
-- **Group Management Module**: This module is responsible for managing the groups of the system. It provides APIs for creating, updating, deleting, and retrieving group information.
+- **Group Management Component**: This is responsible for managing the groups of the system. It provides APIs for creating, updating, deleting, and retrieving group information.
 
-- **Membership Management Module**: This module is responsible for managing the relationship between users and groups. It provides APIs for adding users to groups, removing users from groups, and retrieving the users of a group.
+- **Membership Management Component**: This is responsible for managing the relationship between users and groups. It provides APIs for adding users to groups, removing users from groups, and retrieving the users of a group.
 
 ## User Service
 
@@ -32,18 +32,18 @@ The critical challenge is balancing security with performance while maintaining 
 
 For the User Service implementation, we adopted a **Clean Architecture** approach with clearly separated layers. This architectural choice provides significant benefits for a service responsible for sensitive user data:
 
-```
+```plaintext
 user-service/
 ├── domain/         # Core business entities and rules
 ├── application/    # Use cases and service interfaces
 ├── storage/        # Database and persistence implementations
 ├── presentation/   # Protocol definitions
 ├── grpc/           # gRPC service implementations
-├── rabbitmq/       # Message integration
+├── rabbitmq/       # Message broker integration
 └── entrypoint/     # Application bootstrap
 ```
 
-Each layer has a specific responsibility and communicates only with adjacent layers, with dependencies pointing inward toward the domain layer. This approach allows us to isolate the core business logic from implementation details.
+Each layer has a specific responsibility and communicates only with upper layers, with dependencies pointing inward toward the domain layer. This approach allows us to isolate the core business logic from implementation details.
 
 The domain layer contains pure business entities and rules, uncontaminated by external frameworks or technologies. For example, the `User` entity contains only the essential properties and validation rules:
 
@@ -268,23 +268,3 @@ object Users : BaseTable<User>("users") {
     )
 }
 ```
-
-## Testing Strategy
-
-The User Service includes comprehensive testing at multiple levels:
-
-1. **Unit testing**: Focused on domain logic and service implementations
-2. **Integration testing**: Testing repositories with actual database connections
-
-For integration tests, we use Docker Compose to spin up dependent services:
-
-```kotlin
-dockerCompose {
-    startedServices = listOf("postgres")
-    isRequiredBy(tasks.test)
-}
-```
-
-This approach ensures that tests run against a real PostgreSQL instance, providing confidence that the repository implementations will work correctly in production.
-
-The same thing was done in a similar way with RabbitMQ.
