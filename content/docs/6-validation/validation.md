@@ -206,6 +206,9 @@ These scenarios represent three different levels of stress on the system: `smoke
 
 Tests are composed of one or more stages where, each of these, represents a different level of stress on the system. Each stage has a duration and a target number of virtual users (VUs) that will be simulated during that stage. The `thresholds` object contains the performance thresholds that the system must meet during the test, such as the maximum duration of a request or the maximum failure rate.
 
+![HCP](/images/k6.png)
+
+
 ## Quality Assurance
 
 For all the projects and repositories, depending on the language they are developed in, different Quality Assurance (QA) tools have been used to validate the quality of the codebase.
