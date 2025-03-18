@@ -58,8 +58,8 @@ Cluster_Boundary(cluster, "PositionPal Kubernetes Cluster") {
         KubernetesSvc(notificationSvc, "Service", "")
         KubernetesPod(notification_pod1, "Notification Pod", "")
 
-        KubernetesRs(rs_notification_pod,"","")
-        KubernetesDeploy(deploy_notification_pod,"deployment notification","")
+        KubernetesRs(rs_notification_pod,"Replica Set","")
+        KubernetesDeploy(deploy_notification_pod,"Deployment","")
         KubernetesHpa(hpa_notification_pod, "HPA", "")
 
         Rel(rs_notification_pod,notification_pod1, " ")
@@ -73,8 +73,8 @@ Cluster_Boundary(cluster, "PositionPal Kubernetes Cluster") {
         KubernetesSvc(gatewaySvc, "Service", "")
         KubernetesPod(gateway_pod1, "Gateway Pod 1", "")
 
-        KubernetesRs(rs,"","")
-        KubernetesDeploy(deploy,"deployment","")
+        KubernetesRs(rs,"Replica Set","")
+        KubernetesDeploy(deploy,"Deployment","")
         KubernetesHpa(hpa, "HPA", "")
 
         Rel(gatewaySvc, gateway_pod1, " ")
@@ -88,11 +88,11 @@ Cluster_Boundary(cluster, "PositionPal Kubernetes Cluster") {
         KubernetesPod(user_pod1, "User Pod", "")
         KubernetesPod(postgress_pod, "Postgress Pod", "")
 
-        KubernetesRs(rs_user_pod,"","")
-        KubernetesDeploy(deploy_user_pod,"deployment user","")
+        KubernetesRs(rs_user_pod,"Replica Set","")
+        KubernetesDeploy(deploy_user_pod,"Deployment","")
         KubernetesHpa(hpa_user_pod, "HPA", "")
         
-        KubernetesDeploy(deploy_user_cassandra,"deployment cassandra","")
+        KubernetesDeploy(deploy_user_cassandra,"Deployment","")
         
 
         Rel(userSvc, user_pod1, " ")
@@ -113,12 +113,12 @@ Cluster_Boundary(cluster, "PositionPal Kubernetes Cluster") {
         KubernetesPod(location_pod1, "Location Pod", "")
         KubernetesPod(cassandra_pod_location, "Cassandra Pod", "")
 
-        KubernetesRs(rs_location_pod,"","")
-        KubernetesDeploy(deploy_location_pod,"deployment location","")
+        KubernetesRs(rs_location_pod,"Replica Set","")
+        KubernetesDeploy(deploy_location_pod,"Deployment","")
         KubernetesHpa(hpa_location_pod, "HPA", "")
 
-        KubernetesRs(rs_location_cassandra,"","")
-        KubernetesDeploy(deploy_location_cassandra,"deployment cassandra","")
+        KubernetesRs(rs_location_cassandra,"Replica Set","")
+        KubernetesDeploy(deploy_location_cassandra,"Deployment","")
         KubernetesHpa(hpa_location_cassandra, "HPA", "")
         
         Rel(rs_location_pod,location_pod1, " ")
@@ -141,12 +141,12 @@ Cluster_Boundary(cluster, "PositionPal Kubernetes Cluster") {
         KubernetesPod(chat_pod1, "Chat Pod", "")
         KubernetesPod(cassandra_pod_chat, "Cassandra Pod", "")
 
-        KubernetesRs(rs_chat_pod,"","")
-        KubernetesDeploy(deploy_chat_pod,"deployment chat","")
+        KubernetesRs(rs_chat_pod,"Replica Set","")
+        KubernetesDeploy(deploy_chat_pod,"Deployment","")
         KubernetesHpa(hpa_chat_pod, "HPA", "")
 
-        KubernetesRs(rs_chat_cassandra,"","")
-        KubernetesDeploy(deploy_chat_cassandra,"deployment","")
+        KubernetesRs(rs_chat_cassandra,"Replica Set","")
+        KubernetesDeploy(deploy_chat_cassandra,"Deployment","")
         KubernetesHpa(hpa_chat_cassandra, "HPA", "")
 
         Rel(rs_chat_pod,chat_pod1, " ")
