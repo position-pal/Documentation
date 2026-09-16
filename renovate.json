@@ -6,8 +6,8 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": [
-        "^\\.github\\/workflows\\/[^/]+\\.[Yy][Aa]?[Mm][Ll]$"
+      "managerFilePatterns": [
+        "/^\\.github\\/workflows\\/[^/]+\\.[Yy][Aa]?[Mm][Ll]$/"
       ],
       "matchStrings": [
         "\\s+HUGO_VERSION:\\s+'?\"?(?<currentValue>\\d+(\\.\\d+)*)'?\"?"
